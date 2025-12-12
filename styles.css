@@ -1,371 +1,141 @@
-/* ===== ESTILOS GERAIS ===== */
-body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; }
+/* Reset e Base */
 html { scroll-behavior: smooth; }
+body { -webkit-font-smoothing: antialiased; }
 
-/* ===== HEADER E NAVEGAÇÃO ===== */
-.header-nav-btn {
-  display: inline-flex;
-  align-items: center;
-  padding: 8px 16px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #15803d;
-  background-color: transparent;
-  border: 2px solid transparent;
-  border-radius: 8px;
-  text-decoration: none;
-  transition: all 0.2s ease-in-out;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-}
-
-.header-nav-btn:hover {
-  color: #ffffff;
-  background-color: #15803d;
-  border-color: #15803d;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(21, 128, 61, 0.2);
-}
-
-.header-nav-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(21, 128, 61, 0.2);
-}
-
-/* Botão Especial Club */
-.header-nav-btn:has(ion-icon[name="star-outline"]) {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%);
-  border-color: #10b981;
-  font-weight: 600;
-}
-
-.header-nav-btn:has(ion-icon[name="star-outline"]):hover {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  border-color: #059669;
-  color: #ffffff;
-}
-
-@media (min-width: 640px) {
-  .header-nav-btn { font-size: 1rem; padding: 10px 18px; }
-}
-
-/* ===== FILTROS DE CATEGORIA ===== */
-#category-filters { display: flex; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; gap: 0.5rem; padding-bottom: 0.5rem; }
-#category-filters::-webkit-scrollbar { display: none; }
-
-.category-btn {
-  background-color: #16a34a;
-  color: white;
-  border: none;
-  transition: all 0.25s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.5rem 1rem;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  border-radius: 9999px;
-  font-size: 0.875rem;
-  flex-shrink: 0;
-}
-
-.category-btn:hover {
-  background-color: #15803d;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-}
-
-.category-btn.active {
-  background-color: #14532d;
-  border-bottom: 3px solid #34d399;
-  transform: translateY(0);
-}
-
-/* Categoria Club Especial */
-.club-category-btn {
-  background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
-  font-weight: 600;
-  border-radius: 9999px;
-}
-.club-category-btn.active {
-  background: linear-gradient(135deg, #064e3b 0%, #047857 100%) !important;
-  border-bottom: 3px solid #6ee7b7 !important;
-}
-
-/* ===== CARD DO PRODUTO (VITRINE) ===== */
-.product-card {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  min-height: 440px; /* Aumentei um pouco para caber os ícones */
-  background: white;
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  overflow: hidden;
-  position: relative;
-}
-
-.product-card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
-
-/* Container da Imagem */
-.product-image-container {
-  position: relative;
-  width: 100%;
-  height: 220px;
-  min-height: 220px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #ffffff;
-  border-bottom: 1px solid #f1f5f9;
-  cursor: pointer;
-  overflow: hidden;
-}
-
-.product-image {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  padding: 12px;
-  transition: transform 0.3s ease;
-}
-
-.product-card:hover .product-image { transform: scale(1.05); }
-
-/* BOTÃO DE DETALHES (Novo Design Visível) */
-.info-btn {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(0.9);
-  background-color: rgba(255, 255, 255, 0.95);
-  color: #15803d;
-  padding: 8px 16px;
-  border-radius: 30px;
-  font-weight: 600;
-  font-size: 0.85rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  opacity: 0;
-  transition: all 0.3s ease;
-  border: 1px solid #16a34a;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  z-index: 20;
-}
-
-/* Mostrar botão ao passar o mouse ou em telas touch */
-.product-card:hover .info-btn { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-@media (max-width: 1024px) {
-  .info-btn { opacity: 1; top: auto; bottom: 10px; left: 50%; transform: translateX(-50%); width: auto; font-size: 0.75rem; padding: 6px 12px; }
-}
-
-/* ÍCONES DE DIETA NO CARD (Novo) */
-.dietary-icons-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 8px;
-  margin-bottom: 4px;
-  min-height: 28px; /* Reserva espaço para não pular layout */
-}
-
-.dietary-icon-badge {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 14px;
-  position: relative;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-}
-
-.dietary-icon-badge:hover { transform: scale(1.2); z-index: 10; }
-
-/* Cores dos Ícones */
-.bg-gluten-free { background-color: #f97316; } /* Laranja */
-.bg-vegan { background-color: #22c55e; } /* Verde */
-.bg-sugar-free { background-color: #3b82f6; } /* Azul */
-.bg-lactose-free { background-color: #06b6d4; } /* Ciano */
-
-/* Conteúdo do Card */
-.product-card-content { flex: 1; display: flex; flex-direction: column; padding: 1rem; }
-.product-card h3 { line-height: 1.3; font-size: 1rem; min-height: 2.6em; }
-
-/* Badges de Status (Esgotado/Pouco Estoque) */
-.status-badge {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  z-index: 10;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-.out-of-stock-badge { background: #dc2626; color: white; }
-.low-stock-badge { background: #f59e0b; color: white; }
-.out-of-stock-card { opacity: 0.8; border: 1px solid #ef4444; }
-.product-image.grayscale { filter: grayscale(100%); opacity: 0.6; }
-
-/* Preços */
-.price-container { margin-top: auto; padding-top: 0.5rem; }
-.club-price-container { display: flex; align-items: center; gap: 4px; }
-.club-badge { background: #10b981; color: white; font-size: 0.6rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
-.club-price { color: #059669; font-weight: 700; }
-.normal-price { font-size: 0.75rem; color: #6b7280; text-decoration: line-through; }
-
-/* Botões de Ação */
-.product-actions { display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; gap: 0.5rem; }
-.product-quantity-change { width: 32px; height: 32px; border-radius: 50%; background: #f3f4f6; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-.product-quantity-change:hover:not(:disabled) { background: #16a34a; color: white; }
-.add-to-cart-btn { flex: 1; background: #16a34a; color: white; padding: 8px; border-radius: 8px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 4px; transition: 0.2s; }
-.add-to-cart-btn:hover { background: #15803d; }
-.notify-me-btn { width: 100%; background: #2563eb; color: white; padding: 8px; border-radius: 8px; font-weight: 500; margin-top: 1rem; }
-
-/* ===== MODAL DE DETALHES (Melhorado) ===== */
-#product-details-modal .bg-white {
-  display: flex;
-  flex-direction: column;
-  max-height: 90vh;
-}
-
-#detail-modal-body {
-  display: flex;
-  flex-direction: row; /* Lado a lado no Desktop */
-  overflow-y: auto;
-}
-
-#detail-image-container {
-  width: 40%;
-  background: #f9fafb;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  border-right: 1px solid #e5e7eb;
-}
-
-#detail-image {
-  max-width: 100%;
-  max-height: 400px;
-  object-fit: contain;
-}
-
-#detail-content {
-  width: 60%;
-  padding: 2rem;
-}
-
-/* Layout Mobile do Modal */
-@media (max-width: 768px) {
-  #detail-modal-body {
-    flex-direction: column; /* Um em cima do outro no celular */
-  }
-
-  #detail-image-container {
-    width: 100%;
-    padding: 1rem;
-    height: auto;
-    border-right: none;
-    border-bottom: 1px solid #e5e7eb;
-    display: flex;
-    flex-direction: row; /* Imagem ao lado do título (mini header) */
-    align-items: center;
-    justify-content: flex-start;
-    gap: 1rem;
-    background: white;
-  }
-
-  #detail-image {
-    max-height: 100px; /* Imagem PEQUENA no celular */
-    max-width: 100px;
-  }
-  
-  /* Título ao lado da imagem no mobile */
-  .mobile-title-container {
-    display: block;
-  }
-
-  #detail-content {
-    width: 100%;
-    padding: 1.5rem;
-  }
-}
-
-/* Badges dentro do Modal */
-.modal-tag-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: white;
-  margin-right: 8px;
-  margin-bottom: 8px;
-}
-
-/* ===== MODAIS E OVERLAYS GERAIS ===== */
-.cart-overlay, #name-modal-overlay, #delivery-modal-overlay, #club-info-modal-overlay, #notify-modal-overlay, #product-details-modal-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.6);
-  z-index: 50;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.cart-overlay.open, #name-modal-overlay.open, #delivery-modal-overlay.open, #club-info-modal-overlay.open, #notify-modal-overlay.open, #product-details-modal-overlay.open {
-  display: flex !important;
-  opacity: 1;
-}
-
-/* Transformação dos modais */
-#name-modal, #delivery-modal, #club-info-modal, #notify-modal, #product-details-modal {
-  transform: scale(0.95);
-  opacity: 0;
-  transition: all 0.3s ease;
-}
-
-.open #name-modal, .open #delivery-modal, .open #club-info-modal, .open #notify-modal, .open #product-details-modal {
-  transform: scale(1);
-  opacity: 1;
-}
-
-/* ===== LOADING SPINNER ===== */
+/* Animações e Loading */
 .loading-spinner {
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #16a34a;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #16a34a;
   border-radius: 50%;
   width: 40px;
   height: 40px;
   animation: spin 1s linear infinite;
-  margin: 0 auto;
 }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-/* ===== CARRINHO LATERAL ===== */
-.cart-panel {
-  transition: transform 0.3s ease;
-  transform: translateX(100%);
+/* Cards de Produto */
+.product-card {
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border: 1px solid #f0f0f0;
 }
-.cart-panel.open { transform: translateX(0); }
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  border-color: #dcfce7;
+}
 
-/* ===== PAGINAÇÃO ===== */
-.pagination-btn { width: 40px; height: 40px; border: 1px solid #e5e7eb; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-.pagination-btn.active { background: #16a34a; color: white; border-color: #16a34a; }
+/* Container da Imagem no Card */
+.card-image-wrapper {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  background-color: #ffffff;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
 
-/* ===== VOLTAR AO TOPO ===== */
-.back-to-top { position: fixed; bottom: 20px; right: 20px; background: #16a34a; color: white; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; opacity: 0; visibility: hidden; transition: 0.3s; z-index: 40; border: none; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-.back-to-top.show { opacity: 1; visibility: visible; }
+.card-image-wrapper img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.product-card:hover .card-image-wrapper img {
+  transform: scale(1.05);
+}
+
+/* Botão de Detalhes (Olho) sobre a imagem */
+.details-overlay-btn {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background-color: rgba(255, 255, 255, 0.95);
+  color: #15803d;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  opacity: 0.9;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid #e5e7eb;
+  cursor: pointer;
+  z-index: 10;
+}
+.details-overlay-btn:hover {
+  background-color: #15803d;
+  color: white;
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+/* Área de Ícones de Dieta no Card */
+.diet-icons-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+
+.diet-icon-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 14px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+/* Cores específicas dos ícones */
+.diet-gluten-free { background-color: #fff7ed; color: #ea580c; border: 1px solid #ffedd5; } /* Laranja */
+.diet-vegan { background-color: #f0fdf4; color: #16a34a; border: 1px solid #dcfce7; } /* Verde */
+.diet-sugar-free { background-color: #eff6ff; color: #2563eb; border: 1px solid #dbeafe; } /* Azul */
+.diet-lactose-free { background-color: #ecfeff; color: #06b6d4; border: 1px solid #cffafe; } /* Ciano */
+
+/* Scrollbar invisível para categorias */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Botões de Categoria */
+.cat-btn {
+  white-space: nowrap;
+  transition: all 0.2s;
+  border: 1px solid #e5e7eb;
+}
+.cat-btn.active {
+  background-color: #16a34a;
+  color: white;
+  border-color: #16a34a;
+  box-shadow: 0 4px 6px -1px rgba(22, 163, 74, 0.3);
+}
+
+/* Modais e Overlays */
+#cart-overlay.open { display: block; opacity: 1; }
+#cart-panel.open { transform: translateX(0); }
+
+/* Helpers de Animação */
+.fade-in-up { animation: fadeInUp 0.4s ease-out forwards; opacity: 0; }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+.cart-bounce { animation: bounce 0.5s; }
+@keyframes bounce { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+
+/* Responsividade Mobile - Modal de Detalhes */
+@media (max-width: 640px) {
+  #product-details-modal {
+    max-height: 85vh;
+  }
+}
