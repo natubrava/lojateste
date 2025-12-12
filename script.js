@@ -173,6 +173,19 @@ const elements = {
   confirmNotifyButton: document.getElementById('confirm-notify-button'),
   cancelNotifyButton: document.getElementById('cancel-notify-button'),
   closeNotifyModalButton: document.getElementById('close-notify-modal-button'),
+  // NOVOS ELEMENTOS: Detalhes do Produto
+  productDetailsModalOverlay: document.getElementById('product-details-modal-overlay'),
+  closeDetailsModalButton: document.getElementById('close-details-modal-button'),
+  detailImage: document.getElementById('detail-image'),
+  detailCategory: document.getElementById('detail-category'),
+  detailName: document.getElementById('detail-name'),
+  detailSku: document.getElementById('detail-sku'),
+  detailPriceContainer: document.getElementById('detail-price-container'),
+  detailTagsContainer: document.getElementById('detail-tags-container'),
+  detailIngredientsContainer: document.getElementById('detail-ingredients-container'),
+  detailIngredients: document.getElementById('detail-ingredients'),
+  detailActions: document.getElementById('detail-actions'),
+  detailOutOfStockBadge: document.getElementById('detail-out-of-stock-badge'),
 };
 
 // ===== FUNÇÕES UTILITÁRIAS =====
@@ -248,6 +261,28 @@ function getProductStatus(product) {
     if (stockInGrams < CONFIG.LOW_STOCK_THRESHOLD) return 'low_stock'; // Entre 50-99g = estoque baixo
     return 'available';
   }
+}
+
+// ===== HELPER PARA RENDERIZAR TAGS COLORIDAS =====
+function renderTags(tagsString) {
+  if (!tagsString) return '';
+  
+  const tags = tagsString.split(',').map(t => t.trim()).filter(t => t.length > 0);
+  
+  return tags.map(tag => {
+    let colorClass = 'tag-default';
+    const lowerTag = tag.toLowerCase();
+    
+    if (lowerTag.includes('sem glúten') || lowerTag.includes('sem gluten')) {
+      colorClass = 'tag-gluten';
+    } else if (lowerTag.includes('vegano') || lowerTag.includes('vegana')) {
+      colorClass = 'tag-vegan';
+    } else if (lowerTag.includes('sem lactose')) {
+      colorClass = 'tag-lactose';
+    }
+    
+    return `<span class="product-tag ${colorClass}">${tag}</span>`;
+  }).join('');
 }
 
 // ===== LAZY LOADING DE IMAGENS =====
@@ -461,6 +496,9 @@ async function loadProductsFromSheet(isBackground = false) {
         isGranel: isGranel,
         minQuantity: isGranel ? CONFIG.MIN_GRANEL_QUANTITY : 1,
         quantityStep: isGranel ? CONFIG.MIN_GRANEL_QUANTITY : 1,
+        // NOVOS CAMPOS: Leitura das colunas INGREDIENTES e TAGS
+        ingredients: item.INGREDIENTES || '',
+        tags: item.TAGS || ''
       };
       
       product.status = getProductStatus(product);
@@ -567,8 +605,6 @@ function renderCategoryFilters() {
       count: clubProducts.length
     });
   }
-  
-  // REMOVIDO: Categoria "❌ Fora de Estoque"
   
   elements.categoryFilters.innerHTML = categories.map(cat => {
     let buttonClass = 'category-btn text-sm sm:text-base px-4 py-2 rounded-full';
@@ -691,7 +727,7 @@ function renderProducts() {
           <div class="club-price-container">
             <span class="club-badge">CLUB</span>
             <span class="club-price">R$ ${formatPrice(clubPriceDisplay)}${isGranel ? '/100g' : ''}</span>
-            <button class="club-info-icon ml-1 text-green-600 hover:text-green-800" onclick="openClubInfoModal()" title="Saiba mais sobre o Club NatuBrava">
+            <button class="club-info-icon ml-1 text-green-600 hover:text-green-800" onclick="openClubInfoModal(event)" title="Saiba mais sobre o Club NatuBrava">
               <ion-icon name="information-circle-outline" class="text-sm"></ion-icon>
             </button>
           </div>
@@ -743,8 +779,12 @@ function renderProducts() {
            onerror="this.parentElement.innerHTML='<div class=\\'product-image-error\\'>Imagem<br>Indisponível</div>'">
     `;
     
+    // Adicionado o botão "i" para detalhes
     card.innerHTML = `
       <div class="product-image-container">
+        <button class="info-btn" title="Ver Detalhes">
+          <ion-icon name="information-variant-outline" class="text-lg"></ion-icon>
+        </button>
         ${imageHTML}
         ${statusBadgeHTML}
       </div>
@@ -891,7 +931,7 @@ function addToCart(productId, quantity) {
   const product = products.find(p => p.id === productId);
   if (!product) return;
 
-  // Verificar se produto está disponível (corrigido para permitir low_stock)
+  // Verificar se produto está disponível
   if (product.status === 'out_of_stock') {
     showNotification('Este produto não está disponível para compra no momento.');
     return;
@@ -1014,9 +1054,6 @@ function renderCart() {
   elements.checkoutButton.disabled = cart.length === 0;
 }
 
-// ===== VALIDAÇÃO DO MODAL "AVISE-ME" (REMOVIDA - BOTÃO SEMPRE ATIVO) =====
-// Função removida - botão sempre ativo, validação na hora do envio
-
 // ===== MODAIS =====
 function openCartPanel() { 
   elements.cartPanel.classList.add('open'); 
@@ -1053,6 +1090,132 @@ function closeNameModal() {
   elements.clientNameInput.value = '';
   elements.clientObservation.value = '';
 }
+
+// ===== NOVO MODAL DE DETALHES =====
+function openProductDetails(productId) {
+  const product = products.find(p => p.id === productId);
+  if (!product) return;
+
+  // Preencher dados básicos
+  elements.detailImage.src = product.image;
+  elements.detailImage.onerror = () => { elements.detailImage.src = 'https://placehold.co/400x400/166534/ffffff?text=Sem+Imagem'; };
+  elements.detailCategory.textContent = product.category;
+  elements.detailName.textContent = product.name;
+  elements.detailSku.textContent = product.sku;
+
+  // Lógica de Preço
+  const isGranel = product.isGranel;
+  const hasClubPrice = product.clubPrice !== null && product.clubPrice > 0;
+  
+  let priceHTML = '';
+  if (hasClubPrice) {
+    const normalPrice = isGranel ? product.price * 100 : product.price;
+    const clubPriceDisplay = isGranel ? product.clubPrice * 100 : product.clubPrice;
+    
+    priceHTML = `
+      <div class="flex flex-col">
+        <span class="text-sm text-gray-500 line-through">De R$ ${formatPrice(normalPrice)}${isGranel ? '/100g' : ''}</span>
+        <div class="flex items-center gap-2">
+          <span class="text-3xl font-bold text-green-700">R$ ${formatPrice(clubPriceDisplay)}${isGranel ? '/100g' : ''}</span>
+          <span class="bg-green-600 text-white text-xs px-2 py-1 rounded font-bold uppercase">Club</span>
+        </div>
+      </div>
+    `;
+  } else {
+    priceHTML = `
+      <span class="text-3xl font-bold text-green-700">R$ ${formatPrice(isGranel ? product.price * 100 : product.price)}${isGranel ? '/100g' : ''}</span>
+    `;
+  }
+  elements.detailPriceContainer.innerHTML = priceHTML;
+
+  // Tags
+  elements.detailTagsContainer.innerHTML = renderTags(product.tags);
+
+  // Ingredientes (se vazio, esconde a seção)
+  if (product.ingredients && product.ingredients.trim() !== '') {
+    elements.detailIngredients.textContent = product.ingredients;
+    elements.detailIngredientsContainer.classList.remove('hidden');
+  } else {
+    elements.detailIngredientsContainer.classList.add('hidden');
+  }
+
+  // Ações e Estoque
+  if (product.status === 'out_of_stock') {
+    elements.detailOutOfStockBadge.classList.remove('hidden');
+    elements.detailActions.innerHTML = `
+        <button class="notify-me-btn w-full bg-blue-600 text-white font-medium py-3 px-6 rounded-lg hover:bg-blue-700 flex items-center justify-center space-x-2" onclick="closeDetailsModal(); openNotifyModal(${product.id})">
+          <ion-icon name="notifications-outline" class="text-xl"></ion-icon>
+          <span>Avise-me quando chegar</span>
+        </button>`;
+  } else {
+    elements.detailOutOfStockBadge.classList.add('hidden');
+    const minQty = isGranel ? CONFIG.MIN_GRANEL_QUANTITY : 1;
+    const initialQty = isGranel ? 100 : 1;
+    const maxQty = isGranel ? product.stock * 1000 : product.stock;
+
+    elements.detailActions.innerHTML = `
+      <div class="flex items-center border border-gray-300 rounded-lg">
+        <button class="p-3 text-gray-600 hover:text-green-700 hover:bg-gray-100 rounded-l-lg transition" onclick="changeModalQuantity(-1, ${isGranel}, ${CONFIG.MIN_GRANEL_QUANTITY}, ${maxQty})">
+          <ion-icon name="remove-outline"></ion-icon>
+        </button>
+        <input type="text" id="modal-quantity-input" readonly value="${isGranel ? initialQty + 'g' : initialQty}" class="w-20 text-center font-semibold text-lg border-none focus:ring-0" data-raw-value="${initialQty}">
+        <button class="p-3 text-gray-600 hover:text-green-700 hover:bg-gray-100 rounded-r-lg transition" onclick="changeModalQuantity(1, ${isGranel}, ${CONFIG.MIN_GRANEL_QUANTITY}, ${maxQty})">
+          <ion-icon name="add-outline"></ion-icon>
+        </button>
+      </div>
+      <button class="flex-grow bg-green-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-700 shadow-md transition flex items-center justify-center gap-2" onclick="addToCartFromModal(${product.id}, ${isGranel})">
+        <ion-icon name="cart-outline" class="text-xl"></ion-icon>
+        Adicionar ao Carrinho
+      </button>
+    `;
+  }
+
+  // Abrir Modal
+  elements.productDetailsModalOverlay.classList.add('open');
+  elements.productDetailsModalOverlay.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => {
+    document.getElementById('product-details-modal').style.transform = 'scale(1)';
+    document.getElementById('product-details-modal').style.opacity = '1';
+  }, 50);
+}
+
+function closeDetailsModal() {
+  document.getElementById('product-details-modal').style.transform = 'scale(0.95)';
+  document.getElementById('product-details-modal').style.opacity = '0';
+  setTimeout(() => {
+    elements.productDetailsModalOverlay.classList.remove('open');
+    elements.productDetailsModalOverlay.style.display = 'none';
+    document.body.style.overflow = '';
+  }, 300);
+}
+
+// Funções Auxiliares do Modal de Detalhes (Escopo Global para acesso via HTML string)
+window.changeModalQuantity = function(direction, isGranel, step, maxQty) {
+  const input = document.getElementById('modal-quantity-input');
+  let currentVal = parseInt(input.dataset.rawValue);
+  
+  // Se for unitário, step é 1, se for granel, step é definido (ex: 50)
+  const actualStep = isGranel ? step : 1;
+  const minQty = isGranel ? CONFIG.MIN_GRANEL_QUANTITY : 1;
+  
+  let newVal = currentVal + (direction * actualStep);
+  
+  if (newVal >= minQty && newVal <= maxQty) {
+    input.dataset.rawValue = newVal;
+    input.value = isGranel ? newVal + 'g' : newVal;
+  }
+};
+
+window.addToCartFromModal = function(productId, isGranel) {
+  const input = document.getElementById('modal-quantity-input');
+  const quantity = parseInt(input.dataset.rawValue);
+  
+  addToCart(productId, quantity);
+  closeDetailsModal();
+};
+
+// ... (Resto das funções de modal existentes: Notify, Delivery, ClubInfo) ...
 
 function openNotifyModal(productId) {
   const product = products.find(p => p.id === productId);
@@ -1167,7 +1330,8 @@ function closeDeliveryModal() {
   }, 300);
 }
 
-function openClubInfoModal() { 
+function openClubInfoModal(e) { 
+  if(e) { e.preventDefault(); e.stopPropagation(); }
   elements.clubInfoModalOverlay.classList.add('open'); 
   elements.clubInfoModalOverlay.style.display = 'flex';
   document.body.style.overflow = 'hidden';
@@ -1253,87 +1417,32 @@ function setupEventListeners() {
   
   window.addEventListener('scroll', handleScroll);
   
-  if (elements.deliveryInfoButton) {
-    elements.deliveryInfoButton.addEventListener('click', (e) => {
-      e.preventDefault();
-      openDeliveryModal();
-    });
-  }
-  
-  if (elements.closeDeliveryModalButton) {
-    elements.closeDeliveryModalButton.addEventListener('click', closeDeliveryModal);
-  }
-  
-  if (elements.okDeliveryModalButton) {
-    elements.okDeliveryModalButton.addEventListener('click', closeDeliveryModal);
-  }
-  
-  if (elements.deliveryModalOverlay) {
-    elements.deliveryModalOverlay.addEventListener('click', (e) => {
-      if (e.target === elements.deliveryModalOverlay) closeDeliveryModal();
-    });
-  }
+  // Listeners para Modais existentes
+  if (elements.deliveryInfoButton) elements.deliveryInfoButton.addEventListener('click', (e) => { e.preventDefault(); openDeliveryModal(); });
+  if (elements.closeDeliveryModalButton) elements.closeDeliveryModalButton.addEventListener('click', closeDeliveryModal);
+  if (elements.okDeliveryModalButton) elements.okDeliveryModalButton.addEventListener('click', closeDeliveryModal);
+  if (elements.deliveryModalOverlay) elements.deliveryModalOverlay.addEventListener('click', (e) => { if (e.target === elements.deliveryModalOverlay) closeDeliveryModal(); });
 
-  if (elements.clubInfoButton) {
-    elements.clubInfoButton.addEventListener('click', (e) => {
-      e.preventDefault();
-      openClubInfoModal();
-    });
-  }
+  if (elements.clubInfoButton) elements.clubInfoButton.addEventListener('click', openClubInfoModal);
+  if (elements.clubInfoButtonMobile) elements.clubInfoButtonMobile.addEventListener('click', (e) => { e.preventDefault(); closeMobileMenu(); openClubInfoModal(); });
+  if (elements.deliveryInfoButtonMobile) elements.deliveryInfoButtonMobile.addEventListener('click', (e) => { e.preventDefault(); closeMobileMenu(); openDeliveryModal(); });
   
-  if (elements.clubInfoButtonMobile) {
-    elements.clubInfoButtonMobile.addEventListener('click', (e) => {
-      e.preventDefault();
-      closeMobileMenu();
-      openClubInfoModal();
-    });
-  }
-  
-  if (elements.deliveryInfoButtonMobile) {
-    elements.deliveryInfoButtonMobile.addEventListener('click', (e) => {
-      e.preventDefault();
-      closeMobileMenu();
-      openDeliveryModal();
-    });
-  }
-  
-  if (elements.closeClubModalButton) {
-    elements.closeClubModalButton.addEventListener('click', closeClubInfoModal);
-  }
-  
-  if (elements.clubInfoModalOverlay) {
-    elements.clubInfoModalOverlay.addEventListener('click', (e) => {
-      if (e.target === elements.clubInfoModalOverlay) closeClubInfoModal();
-    });
-  }
+  if (elements.closeClubModalButton) elements.closeClubModalButton.addEventListener('click', closeClubInfoModal);
+  if (elements.clubInfoModalOverlay) elements.clubInfoModalOverlay.addEventListener('click', (e) => { if (e.target === elements.clubInfoModalOverlay) closeClubInfoModal(); });
 
-  if (elements.mobileMenuButton) {
-    elements.mobileMenuButton.addEventListener('click', (e) => {
-      e.preventDefault();
-      toggleMobileMenu();
-    });
-  }
+  if (elements.mobileMenuButton) elements.mobileMenuButton.addEventListener('click', (e) => { e.preventDefault(); toggleMobileMenu(); });
 
   elements.mobileMenu.addEventListener('click', (e) => {
-    if (e.target.tagName === 'A') {
-      closeMobileMenu();
-    }
+    if (e.target.tagName === 'A') closeMobileMenu();
   });
 
-  if (elements.closeNotifyModalButton) {
-    elements.closeNotifyModalButton.addEventListener('click', closeNotifyModal);
-  }
+  if (elements.closeNotifyModalButton) elements.closeNotifyModalButton.addEventListener('click', closeNotifyModal);
+  if (elements.cancelNotifyButton) elements.cancelNotifyButton.addEventListener('click', closeNotifyModal);
+  if (elements.confirmNotifyButton) elements.confirmNotifyButton.addEventListener('click', sendNotifyRequest);
   
-  if (elements.cancelNotifyButton) {
-    elements.cancelNotifyButton.addEventListener('click', closeNotifyModal);
-  }
-  
-  if (elements.confirmNotifyButton) {
-    elements.confirmNotifyButton.addEventListener('click', sendNotifyRequest);
-  }
-  
-  // REMOVIDO: Event listener que fechava modal ao clicar fora
-  // Modal "Avise-me" só fecha com X ou enviando mensagem
+  // Listeners para Modal de Detalhes
+  if (elements.closeDetailsModalButton) elements.closeDetailsModalButton.addEventListener('click', closeDetailsModal);
+  if (elements.productDetailsModalOverlay) elements.productDetailsModalOverlay.addEventListener('click', (e) => { if (e.target === elements.productDetailsModalOverlay) closeDetailsModal(); });
 
   elements.categoryFilters.addEventListener('click', e => {
     if (e.target.matches('.category-btn') || e.target.closest('.category-btn')) {
@@ -1345,6 +1454,19 @@ function setupEventListeners() {
 
   // ===== EVENT LISTENER PARA PRODUTOS (CORRIGIDO) =====
   elements.productList.addEventListener('click', e => {
+    // Verificar se clicou no botão "Avise-me"
+    if (e.target.closest('.notify-me-btn')) {
+      e.preventDefault();
+      e.stopPropagation();
+      const card = e.target.closest('.product-card') || e.target.closest('.notify-me-btn'); // Fallback
+      if (card && card.dataset.productId) { // Caso seja botão isolado
+          openNotifyModal(parseInt(card.dataset.productId));
+      } else if (card && card.dataset.id) { // Caso dentro do card
+          openNotifyModal(parseInt(card.dataset.id));
+      }
+      return;
+    }
+
     const card = e.target.closest('.product-card');
     if (!card) return;
     
@@ -1352,11 +1474,15 @@ function setupEventListeners() {
     const product = products.find(p => p.id === productId);
     if (!product) return;
     
-    if (e.target.closest('.notify-me-btn')) {
-      e.preventDefault();
-      e.stopPropagation();
-      openNotifyModal(productId);
-      return;
+    // Abrir Modal de Detalhes ao clicar no botão "i" OU na imagem (container)
+    if (e.target.closest('.info-btn') || e.target.closest('.product-image-container')) {
+      // Mas não se clicar no badge de status dentro do container
+      if (!e.target.classList.contains('status-badge')) {
+        e.preventDefault();
+        e.stopPropagation();
+        openProductDetails(productId);
+        return;
+      }
     }
     
     const qtySpan = card.querySelector('.product-quantity');
@@ -1491,9 +1617,6 @@ function setupEventListeners() {
     closeNameModal();
   });
   
-  // REMOVIDO: Validação em tempo real do modal "Avise-me"
-  // Agora botão fica sempre ativo, validação apenas no envio
-  
   document.addEventListener('keydown', (e) => {
     if(e.key === 'Escape') {
       closeCartPanel();
@@ -1501,6 +1624,7 @@ function setupEventListeners() {
       closeDeliveryModal();
       closeClubInfoModal();
       closeNotifyModal();
+      closeDetailsModal(); // Adicionado
       closeMobileMenu();
     }
   });
@@ -1508,6 +1632,7 @@ function setupEventListeners() {
 
 // ===== FUNÇÃO GLOBAL PARA MODAL DO CLUB =====
 window.openClubInfoModal = openClubInfoModal;
+window.closeDetailsModal = closeDetailsModal; // Exposto para onclick inline
 
 // ===== INICIALIZAÇÃO =====
 document.addEventListener('DOMContentLoaded', () => {
