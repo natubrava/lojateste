@@ -123,18 +123,18 @@ html { scroll-behavior: smooth; }
 /* Painel do Carrinho e Modais */
 .cart-panel { transition: transform 0.3s ease-in-out; transform: translateX(100%); backface-visibility: hidden; }
 .cart-panel.open { transform: translateX(0); }
-.cart-overlay, #name-modal-overlay, #delivery-modal-overlay, #club-info-modal-overlay, #notify-modal-overlay { transition: opacity 0.3s ease-in-out; opacity: 0; pointer-events: none; }
-.cart-overlay.open, #name-modal-overlay.open, #delivery-modal-overlay.open, #club-info-modal-overlay.open, #notify-modal-overlay.open { opacity: 1; pointer-events: auto; }
-#name-modal-overlay, #delivery-modal-overlay, #club-info-modal-overlay, #notify-modal-overlay { display: none; }
-#name-modal-overlay.open, #delivery-modal-overlay.open, #club-info-modal-overlay.open, #notify-modal-overlay.open { display: flex !important; }
-#name-modal, #delivery-modal, #club-info-modal, #notify-modal { transform: scale(0.95); opacity: 0; transition: all 0.3s ease-in-out; }
-#name-modal-overlay.open #name-modal, #delivery-modal-overlay.open #delivery-modal, #club-info-modal-overlay.open #club-info-modal, #notify-modal-overlay.open #notify-modal { transform: scale(1); opacity: 1; }
+.cart-overlay, #name-modal-overlay, #delivery-modal-overlay, #club-info-modal-overlay, #notify-modal-overlay, #product-details-modal-overlay { transition: opacity 0.3s ease-in-out; opacity: 0; pointer-events: none; }
+.cart-overlay.open, #name-modal-overlay.open, #delivery-modal-overlay.open, #club-info-modal-overlay.open, #notify-modal-overlay.open, #product-details-modal-overlay.open { opacity: 1; pointer-events: auto; }
+#name-modal-overlay, #delivery-modal-overlay, #club-info-modal-overlay, #notify-modal-overlay, #product-details-modal-overlay { display: none; }
+#name-modal-overlay.open, #delivery-modal-overlay.open, #club-info-modal-overlay.open, #notify-modal-overlay.open, #product-details-modal-overlay.open { display: flex !important; }
+#name-modal, #delivery-modal, #club-info-modal, #notify-modal, #product-details-modal { transform: scale(0.95); opacity: 0; transition: all 0.3s ease-in-out; }
+#name-modal-overlay.open #name-modal, #delivery-modal-overlay.open #delivery-modal, #club-info-modal-overlay.open #club-info-modal, #notify-modal-overlay.open #notify-modal, #product-details-modal-overlay.open #product-details-modal { transform: scale(1); opacity: 1; }
 .cart-items { scrollbar-width: thin; scrollbar-color: #c1c1c1 #f1f1f1; }
 .cart-items::-webkit-scrollbar { width: 6px; }
 .cart-items::-webkit-scrollbar-track { background: #f1f1f1; }
 .cart-items::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 3px; }
 .cart-items::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
-.add-to-cart-btn:active, .product-quantity-change:active, .category-btn:active, .cart-quantity-change:active, .notify-me-btn:active { transform: scale(0.95); }
+.add-to-cart-btn:active, .product-quantity-change:active, .category-btn:active, .cart-quantity-change:active, .notify-me-btn:active, .info-btn:active { transform: scale(0.95); }
 .product-quantity-change:disabled, .cart-quantity-change:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
 
 /* Filtros de categoria roláveis */
@@ -151,11 +151,11 @@ html { scroll-behavior: smooth; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.5rem 1rem; /* CORRIGIDO: Padding mais consistente */
+  padding: 0.5rem 1rem;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  overflow: visible; /* CORRIGIDO: Garante que não corte o conteúdo */
-  position: relative; /* CORRIGIDO: Para garantir o posicionamento correto */
-  z-index: 1; /* CORRIGIDO: Z-index base */
+  overflow: visible;
+  position: relative;
+  z-index: 1;
 }
 
 .category-btn:hover {
@@ -163,7 +163,7 @@ html { scroll-behavior: smooth; }
   color: white;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-  z-index: 10; /* CORRIGIDO: Garante que fique por cima durante hover */
+  z-index: 10;
 }
 
 .category-btn.active {
@@ -172,7 +172,7 @@ html { scroll-behavior: smooth; }
   box-shadow: none;
   transform: translateY(0);
   border-bottom: 3px solid #34d399;
-  z-index: 5; /* CORRIGIDO: Z-index para botão ativo */
+  z-index: 5;
 }
 
 /* Contadores dentro dos botões de categoria */
@@ -206,7 +206,7 @@ html { scroll-behavior: smooth; }
 .club-category-btn:hover {
   background: linear-gradient(135deg, #047857 0%, #059669 100%) !important;
   box-shadow: 0 6px 12px rgba(5, 150, 105, 0.4);
-  z-index: 10; /* CORRIGIDO: Z-index para hover */
+  z-index: 10;
 }
 
 .club-category-btn.active {
@@ -224,12 +224,57 @@ html { scroll-behavior: smooth; }
 /* ===== PADRONIZAÇÃO DE IMAGENS E CARDS ===== */
 .product-card { transition: all 0.3s ease; display: flex; flex-direction: column; height: 100%; min-height: 420px; }
 .product-card:hover { transform: translateY(-2px); }
-.product-image-container { position: relative; width: 100%; height: 220px !important; min-height: 220px; max-height: 220px; overflow: hidden; background-color: #ffffff; border-radius: 0.5rem 0.5rem 0 0; display: flex; align-items: center; justify-content: center; border: 1px solid #f1f5f9; }
+.product-image-container { position: relative; width: 100%; height: 220px !important; min-height: 220px; max-height: 220px; overflow: hidden; background-color: #ffffff; border-radius: 0.5rem 0.5rem 0 0; display: flex; align-items: center; justify-content: center; border: 1px solid #f1f5f9; cursor: pointer; }
 .product-image { width: 100% !important; height: 100% !important; min-height: 220px !important; max-height: 220px !important; object-fit: contain !important; object-position: center !important; transition: transform 0.3s ease; background-color: #fff; display: block; padding: 8px; }
 .product-card:hover .product-image { transform: scale(1.03); }
 .product-image-error { display: flex !important; align-items: center; justify-content: center; width: 100%; height: 220px !important; min-height: 220px !important; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); color: #666; font-size: 0.9rem; text-align: center; padding: 1rem; border: 1px solid #dee2e6; }
 .product-card-content { flex: 1; display: flex; flex-direction: column; padding: 1rem; min-height: 200px; }
 .product-card-footer { margin-top: auto; }
+
+/* ===== BOTÃO FLUTUANTE DE INFORMAÇÃO (NOVO) ===== */
+.info-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  color: #15803d;
+  z-index: 20;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+.info-btn:hover {
+  background-color: #15803d;
+  color: white;
+  transform: scale(1.1);
+  border-color: #15803d;
+}
+
+/* ===== TAGS DO MODAL (NOVO) ===== */
+.product-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  white-space: nowrap;
+}
+
+/* Cores das Tags */
+.tag-gluten { background-color: #ffedd5; color: #9a3412; border: 1px solid #fed7aa; } /* Laranja */
+.tag-vegan { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; } /* Verde */
+.tag-lactose { background-color: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; } /* Azul */
+.tag-default { background-color: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; } /* Cinza (padrão) */
 
 /* ===== ESTILOS PARA PRODUTOS FORA DE ESTOQUE E ESTOQUE BAIXO ===== */
 .out-of-stock-card {
@@ -402,7 +447,7 @@ html { scroll-behavior: smooth; }
 /* ===== Notificações, Modais e Otimizações Finais ===== */
 .cart-notification { box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); backdrop-filter: blur(10px); max-width: 300px; word-wrap: break-word; transition: all 0.3s ease; }
 @media (max-width: 640px) {
-  #name-modal, #delivery-modal, #club-info-modal, #notify-modal { margin: 1rem; max-height: 90vh; overflow-y: auto; max-width: calc(100vw - 2rem); }
+  #name-modal, #delivery-modal, #club-info-modal, #notify-modal, #product-details-modal { margin: 1rem; max-height: 90vh; overflow-y: auto; max-width: calc(100vw - 2rem); }
   #name-modal, #notify-modal { padding: 1.5rem; }
   #name-modal h3, #notify-modal h3 { font-size: 1.25rem; }
   #name-modal .text-sm, #notify-modal .text-sm { font-size: 0.875rem; }
