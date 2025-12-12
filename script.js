@@ -1,416 +1,603 @@
-// ===== CONFIGURAÇÕES =====
+/**
+ * NATUBRAVA CATALOG SYSTEM - VERSÃO CORRIGIDA UX/UI
+ * Foco: Ícones na vitrine e Modal Otimizado Mobile
+ */
+
 const CONFIG = {
-  SHEET_CSV_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS6FsKfgWJxQBzkKSP3ekD-Tbb7bfvGs_Df9aUT9bkv8gPL8dySYVkMmFdlajdrgxLZUs3pufrc0ZX8/pub?gid=1353948690&single=true&output=csv',
-  WHATSAPP_NUMBER: '554733483186',
+  CSV_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS6FsKfgWJxQBzkKSP3ekD-Tbb7bfvGs_Df9aUT9bkv8gPL8dySYVkMmFdlajdrgxLZUs3pufrc0ZX8/pub?gid=1353948690&single=true&output=csv',
+  WHATSAPP: '554733483186',
   PROXIES: ['https://api.allorigins.win/raw?url=', 'https://corsproxy.io/?'],
-  CACHE_DURATION: 3 * 60 * 1000,
-  CACHE_KEY: 'natuBrava_products_cache',
-  ITEMS_PER_PAGE: 60,
-  SCROLL_THRESHOLD: 300,
-  LOW_STOCK_THRESHOLD: 100,
-  MIN_GRANEL_QUANTITY: 50
+  CACHE_KEY: 'nb_products_v3',
+  CACHE_TIME: 5 * 60 * 1000, // 5 min
+  ITEMS_PER_PAGE: 40
 };
 
-// Variáveis Globais
-let products = [];
-let filteredProducts = [];
-let cart = [];
-let currentFilter = 'Todos';
-let currentPage = 1;
-let totalPages = 1;
-let isLoading = false;
-let searchTimeout;
+// --- ESTADO GLOBAL ---
+let state = {
+  products: [],
+  filtered: [],
+  cart: JSON.parse(localStorage.getItem('nb_cart')) || [],
+  currentPage: 1,
+  currentCategory: 'Todos',
+  isLoading: false
+};
 
-// ===== FUNÇÕES DE UTILIDADE E CACHE =====
-function normalizeText(text) { return text ? text.toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') : ''; }
-function parsePrice(str) { return parseFloat(str?.toString().replace(',', '.') || 0); }
-function formatPrice(num) { return num.toFixed(2).replace('.', ','); }
+// --- ELEMENTOS DOM ---
+const $ = (id) => document.getElementById(id);
+const els = {
+  list: $('product-list'),
+  loading: $('loading-status'),
+  section: $('produtos'),
+  search: $('search-box'),
+  cats: $('category-filters'),
+  counter: $('product-counter'),
+  pagination: $('pagination'),
+  error: $('error-section'),
+  errDetails: $('error-details'),
+  retry: $('retry-button'),
+  
+  // Cart
+  cartBtn: $('cart-button'),
+  cartBtnMob: $('cart-button-mobile'),
+  cartPanel: $('cart-panel'),
+  cartOverlay: $('cart-overlay'),
+  cartItems: $('cart-items'),
+  cartTotal: $('cart-total'),
+  cartCount: $('cart-count'),
+  cartCountMob: $('cart-count-mobile'),
+  closeCart: $('close-cart-button'),
+  checkout: $('checkout-button'),
+  
+  // Modais
+  detailsModal: $('product-details-modal'),
+  detailsOverlay: $('product-details-modal-overlay'),
+  closeDetails: $('close-details-modal-button'),
+  
+  nameModal: $('name-modal'),
+  nameOverlay: $('name-modal-overlay'),
+  confirmCheckout: $('confirm-checkout-button'),
+  cancelCheckout: $('cancel-checkout-button'),
+  
+  clubInfoBtn: $('club-info-button'),
+  clubOverlay: $('club-info-modal-overlay'),
+  closeClub: $('close-club-modal-button')
+};
 
-function getCachedProducts() {
+// --- SISTEMA DE DADOS ---
+
+async function init() {
+  renderCart();
   try {
     const cached = localStorage.getItem(CONFIG.CACHE_KEY);
     if (cached) {
       const data = JSON.parse(cached);
-      if (Date.now() - data.timestamp < CONFIG.CACHE_DURATION) return data.products;
-    }
-  } catch (e) { localStorage.removeItem(CONFIG.CACHE_KEY); }
-  return null;
-}
-
-function setCachedProducts(data) {
-  localStorage.setItem(CONFIG.CACHE_KEY, JSON.stringify({ products: data, timestamp: Date.now() }));
-}
-
-function getProductStatus(product) {
-  if (product.isGranel) {
-    const stockGrams = product.stock * 1000;
-    if (stockGrams <= 0 || stockGrams < CONFIG.MIN_GRANEL_QUANTITY) return 'out_of_stock';
-    if (stockGrams < CONFIG.LOW_STOCK_THRESHOLD) return 'low_stock';
-  } else {
-    if (product.stock <= 0) return 'out_of_stock';
-    if (product.stock === 1) return 'low_stock';
-  }
-  return 'available';
-}
-
-// ===== LÓGICA DE ÍCONES (NOVA) =====
-function getDietaryInfo(tagsString) {
-    if (!tagsString) return [];
-    const tags = tagsString.split(',').map(t => t.trim().toLowerCase()).filter(t => t.length > 0);
-    const infoList = [];
-
-    tags.forEach(tag => {
-        if (tag.includes('sem glúten') || tag.includes('gluten free')) {
-            infoList.push({ icon: 'ban-outline', label: 'Sem Glúten', bgClass: 'bg-gluten-free' });
-        } else if (tag.includes('vegano') || tag.includes('vegan')) {
-            infoList.push({ icon: 'leaf-outline', label: 'Vegano', bgClass: 'bg-vegan' });
-        } else if (tag.includes('sem açúcar') || tag.includes('zero açúcar')) {
-            infoList.push({ icon: 'cube-outline', label: 'Sem Açúcar', bgClass: 'bg-sugar-free' });
-        } else if (tag.includes('sem lactose') || tag.includes('zero lactose')) {
-            infoList.push({ icon: 'water-outline', label: 'Sem Lactose', bgClass: 'bg-lactose-free' });
-        }
-    });
-    return infoList;
-}
-
-// ===== RENDERIZAÇÃO DO CARD =====
-function renderProducts() {
-  const list = document.getElementById('product-list');
-  const start = (currentPage - 1) * CONFIG.ITEMS_PER_PAGE;
-  const pageProducts = filteredProducts.slice(start, start + CONFIG.ITEMS_PER_PAGE);
-  
-  list.innerHTML = '';
-  document.getElementById('no-products-message').style.display = pageProducts.length ? 'none' : 'block';
-  
-  const fragment = document.createDocumentFragment();
-  
-  pageProducts.forEach(p => {
-    const card = document.createElement('div');
-    const isGranel = p.isGranel;
-    const status = p.status;
-    const hasClub = p.clubPrice && p.clubPrice > 0;
-    const initQty = isGranel ? 100 : 1;
-    
-    let cardClass = 'product-card';
-    if (status === 'out_of_stock') cardClass += ' out-of-stock-card';
-    
-    card.className = cardClass;
-    card.dataset.id = p.id;
-
-    // Badges de Dieta
-    const dietaryIcons = getDietaryInfo(p.tags).slice(0, 4).map(info => `
-        <div class="dietary-icon-badge ${info.bgClass}" title="${info.label}">
-            <ion-icon name="${info.icon}"></ion-icon>
-        </div>
-    `).join('');
-
-    // Preço
-    let priceHTML = '';
-    if (hasClub && status !== 'out_of_stock') {
-        priceHTML = `
-            <div class="price-container">
-                <span class="normal-price">De R$ ${formatPrice(isGranel ? p.price * 100 : p.price)}</span>
-                <div class="club-price-container">
-                    <span class="club-badge">CLUB</span>
-                    <span class="club-price">R$ ${formatPrice(isGranel ? p.clubPrice * 100 : p.clubPrice)}${isGranel ? '/100g' : ''}</span>
-                </div>
-            </div>`;
-    } else {
-        priceHTML = `<div class="price-container"><span class="text-lg font-bold text-green-700">R$ ${formatPrice(isGranel ? p.price * 100 : p.price)}${isGranel ? '/100g' : ''}</span></div>`;
-    }
-
-    // Ações (Botões)
-    let actionsHTML = '';
-    if (status === 'out_of_stock') {
-        actionsHTML = `<button class="notify-me-btn" onclick="openNotifyModal(${p.id})">Avise-me</button>`;
-    } else {
-        const min = isGranel ? CONFIG.MIN_GRANEL_QUANTITY : 1;
-        actionsHTML = `
-            <div class="product-actions">
-                <button class="product-quantity-change" data-change="-1" ${initQty <= min ? 'disabled' : ''}><ion-icon name="remove-outline"></ion-icon></button>
-                <span class="product-quantity font-bold text-gray-800 w-12 text-center">${isGranel ? initQty+'g' : initQty}</span>
-                <button class="product-quantity-change" data-change="1"><ion-icon name="add-outline"></ion-icon></button>
-                <button class="add-to-cart-btn"><ion-icon name="cart-outline"></ion-icon> Add</button>
-            </div>
-        `;
-    }
-
-    card.innerHTML = `
-        <div class="product-image-container">
-            <button class="info-btn"><ion-icon name="eye-outline"></ion-icon> Ver Detalhes</button>
-            <img src="${p.image}" class="product-image ${status === 'out_of_stock' ? 'grayscale' : ''}" loading="lazy" onerror="this.src='https://placehold.co/300x200?text=Sem+Foto'">
-            ${status === 'out_of_stock' ? '<span class="status-badge out-of-stock-badge">Esgotado</span>' : ''}
-        </div>
-        <div class="product-card-content">
-            <h3 class="font-semibold text-gray-800">${p.name}</h3>
-            <p class="text-xs text-gray-500 mb-1">Cód: ${p.sku}</p>
-            <div class="dietary-icons-row">${dietaryIcons}</div>
-            ${priceHTML}
-            ${actionsHTML}
-        </div>
-    `;
-    fragment.appendChild(card);
-  });
-  list.appendChild(fragment);
-  renderPagination();
-}
-
-// ===== MODAL DE DETALHES (ATUALIZADO) =====
-function openProductDetails(id) {
-    const p = products.find(prod => prod.id === id);
-    if (!p) return;
-
-    // Preencher Infos
-    document.getElementById('detail-image').src = p.image;
-    document.getElementById('detail-name').textContent = p.name;
-    document.getElementById('detail-name-mobile').textContent = p.name; // Mobile
-    document.getElementById('detail-sku').textContent = p.sku;
-    document.getElementById('detail-sku-mobile').textContent = `Cód: ${p.sku}`; // Mobile
-    document.getElementById('detail-category').textContent = p.category;
-
-    // Tags (Pílulas)
-    const tagsHTML = getDietaryInfo(p.tags).map(info => 
-        `<span class="modal-tag-badge ${info.bgClass}"><ion-icon name="${info.icon}"></ion-icon> ${info.label}</span>`
-    ).join('');
-    document.getElementById('detail-tags-container').innerHTML = tagsHTML;
-
-    // Preço (Informativo apenas)
-    const isGranel = p.isGranel;
-    const hasClub = p.clubPrice && p.clubPrice > 0;
-    const priceDisplay = isGranel ? (p.price * 100) : p.price;
-    const clubDisplay = isGranel ? (p.clubPrice * 100) : p.clubPrice;
-    
-    let priceHTML = '';
-    if (hasClub) {
-        priceHTML = `
-            <div class="flex flex-col">
-                <span class="text-sm text-gray-500 line-through">De R$ ${formatPrice(priceDisplay)}</span>
-                <span class="text-2xl font-bold text-green-700">R$ ${formatPrice(clubDisplay)} <span class="text-xs bg-green-600 text-white px-2 py-1 rounded">CLUB</span></span>
-            </div>`;
-    } else {
-        priceHTML = `<span class="text-2xl font-bold text-green-700">R$ ${formatPrice(priceDisplay)}</span>`;
-    }
-    document.getElementById('detail-price-container').innerHTML = priceHTML + (isGranel ? '<span class="text-xs text-gray-500 block mt-1">Valor referente a 100g</span>' : '');
-
-    // Ingredientes
-    const ingEl = document.getElementById('detail-ingredients');
-    ingEl.innerHTML = p.ingredients ? p.ingredients : '<p class="italic text-gray-400">Informações detalhadas não disponíveis.</p>';
-
-    // Abrir
-    const modal = document.getElementById('product-details-modal-overlay');
-    modal.classList.add('open');
-    modal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-}
-
-// ===== CARREGAMENTO =====
-async function loadProducts() {
-    if (isLoading) return;
-    isLoading = true;
-    
-    const cached = getCachedProducts();
-    if (cached) {
-        products = cached;
-        finishLoad();
-        loadFromSheet(true);
+      if (Date.now() - data.ts < CONFIG.CACHE_TIME) {
+        state.products = data.items;
+        finalizeLoad();
+        // Background refresh
+        fetchProducts(true);
         return;
+      }
     }
-    await loadFromSheet(false);
+    await fetchProducts();
+  } catch (e) {
+    showError(e.message);
+  }
 }
 
-async function loadFromSheet(bg = false) {
+async function fetchProducts(isBackground = false) {
+  if (!isBackground) state.isLoading = true;
+  
+  let csvText = null;
+  let lastError = null;
+
+  for (const proxy of CONFIG.PROXIES) {
     try {
-        if (!bg) document.getElementById('loading-status').style.display = 'block';
-        
-        let res;
-        try { res = await fetch(CONFIG.SHEET_CSV_URL); } 
-        catch { res = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(CONFIG.SHEET_CSV_URL)); }
-        
-        const txt = await res.text();
-        const lines = txt.trim().split('\n').map(l => l.trim());
-        const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g, '').trim());
-        
-        products = lines.slice(1).map((line, idx) => {
-             // Parse CSV simples ignorando virgulas dentro de aspas
-             const vals = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/^"|"$/g, '').trim());
-             const obj = {};
-             headers.forEach((h, i) => obj[h] = vals[i] || '');
-             
-             const isGranel = (obj.CATEGORIA||'').toUpperCase() === 'GRANEL';
-             const price = parsePrice(obj.PRECO);
-             const clubPrice = parsePrice(obj.CLUB_VLR || obj.VLR_CLUB || '0');
-             
-             return {
-                 id: idx + 1,
-                 sku: obj.SKU || `ID${idx}`,
-                 name: obj.NOME_SITE || 'Produto',
-                 category: obj.CATEGORIA || 'Geral',
-                 image: obj.URL_FOTO || '',
-                 price: isGranel ? price/1000 : price,
-                 clubPrice: (clubPrice > 0) ? (isGranel ? clubPrice/1000 : clubPrice) : null,
-                 stock: parsePrice(obj.ESTOQUE),
-                 isGranel: isGranel,
-                 ingredients: obj.INGREDIENTES || '',
-                 tags: obj.TAGS || '',
-                 status: 'available' // Será atualizado
-             };
-        }).filter(p => p.price > 0);
-
-        products.forEach(p => p.status = getProductStatus(p));
-        setCachedProducts(products);
-        finishLoad();
+      const res = await fetch(proxy + encodeURIComponent(CONFIG.CSV_URL));
+      if (res.ok) {
+        csvText = await res.text();
+        break;
+      }
     } catch (e) {
-        console.error(e);
-        if(!bg) document.getElementById('error-section').style.display = 'block';
-    } finally { isLoading = false; }
+      lastError = e;
+      console.warn(`Proxy falhou: ${proxy}`);
+    }
+  }
+
+  if (!csvText) {
+    if (!isBackground) throw new Error('Não foi possível carregar a planilha. Verifique sua conexão.');
+    return;
+  }
+
+  const items = parseCSV(csvText);
+  if (items.length === 0 && !isBackground) throw new Error('A planilha parece estar vazia.');
+
+  state.products = items;
+  localStorage.setItem(CONFIG.CACHE_KEY, JSON.stringify({ items, ts: Date.now() }));
+  
+  if (!isBackground) finalizeLoad();
 }
 
-function finishLoad() {
-    document.getElementById('loading-status').style.display = 'none';
-    document.getElementById('produtos').style.display = 'block';
-    renderFilters();
-    applyFilters();
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  const headers = lines[0].split(',').map(h => h.trim().toUpperCase().replace(/"/g, ''));
+  
+  // Map columns dynamic
+  const map = {
+    sku: headers.indexOf('SKU'),
+    name: headers.indexOf('NOME_SITE'),
+    price: headers.indexOf('PRECO'),
+    stock: headers.indexOf('ESTOQUE'),
+    cat: headers.indexOf('CATEGORIA'),
+    img: headers.indexOf('URL_FOTO'),
+    club: headers.find(h => h.includes('CLUB')) ? headers.indexOf(headers.find(h => h.includes('CLUB'))) : -1,
+    tags: headers.indexOf('TAGS'),
+    ingredients: headers.indexOf('INGREDIENTES')
+  };
+
+  return lines.slice(1).map((line, i) => {
+    // Regex complexo para lidar com vírgulas dentro de aspas no CSV
+    const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.trim().replace(/^"|"$/g, ''));
+    
+    if (!cols[map.sku] || !cols[map.name]) return null;
+
+    const price = parseFloat(cols[map.price]?.replace(',', '.') || 0);
+    const stock = parseFloat(cols[map.stock]?.replace(',', '.') || 0);
+    const clubPrice = map.club > -1 ? parseFloat(cols[map.club]?.replace(',', '.') || 0) : 0;
+    const cat = cols[map.cat] || 'Geral';
+    const isGranel = cat.toUpperCase() === 'GRANEL';
+
+    return {
+      id: i,
+      sku: cols[map.sku],
+      name: cols[map.name],
+      cat: cat,
+      price: isGranel ? price / 1000 : price, // Base price unitário (g ou un)
+      clubPrice: (clubPrice > 0) ? (isGranel ? clubPrice / 1000 : clubPrice) : null,
+      stock: stock,
+      isGranel: isGranel,
+      img: cols[map.img],
+      tags: cols[map.tags] || '',
+      ingredients: cols[map.ingredients] || '',
+      // Granel step: 100g. Unitário: 1
+      step: isGranel ? 100 : 1,
+      min: isGranel ? 50 : 1
+    };
+  }).filter(Boolean);
 }
 
-function renderFilters() {
-    const cats = ['Todos', ...new Set(products.map(p => p.category))];
-    const container = document.getElementById('category-filters');
-    container.innerHTML = cats.map(c => `
-        <button class="category-btn ${c === currentFilter ? 'active' : ''}" onclick="setFilter('${c}')">
-            ${c}
+function finalizeLoad() {
+  els.loading.style.display = 'none';
+  els.section.style.display = 'block';
+  renderCategories();
+  applyFilters();
+}
+
+// --- RENDERIZAÇÃO DA VITRINE ---
+
+function generateDietIcons(tagsString) {
+  if (!tagsString) return '';
+  const tags = tagsString.toLowerCase();
+  let html = '';
+
+  // Regras de negócio para ícones
+  if (tags.includes('glúten') && (tags.includes('sem') || tags.includes('nao') || tags.includes('não'))) {
+    html += `<div class="diet-icon-badge diet-gluten-free" title="Sem Glúten"><ion-icon name="ban-outline"></ion-icon></div>`;
+  }
+  if (tags.includes('vegano') || tags.includes('vegana')) {
+    html += `<div class="diet-icon-badge diet-vegan" title="Vegano"><ion-icon name="leaf-outline"></ion-icon></div>`;
+  }
+  if (tags.includes('açúcar') && (tags.includes('sem') || tags.includes('zero'))) {
+    html += `<div class="diet-icon-badge diet-sugar-free" title="Sem Açúcar"><ion-icon name="cube-outline"></ion-icon></div>`;
+  }
+  if (tags.includes('lactose') && (tags.includes('sem') || tags.includes('zero'))) {
+    html += `<div class="diet-icon-badge diet-lactose-free" title="Sem Lactose"><ion-icon name="water-outline"></ion-icon></div>`;
+  }
+  
+  return html ? `<div class="diet-icons-row">${html}</div>` : '';
+}
+
+function renderProducts() {
+  const start = (state.currentPage - 1) * CONFIG.ITEMS_PER_PAGE;
+  const pageItems = state.filtered.slice(start, start + CONFIG.ITEMS_PER_PAGE);
+  
+  els.list.innerHTML = pageItems.map(p => {
+    const hasClub = p.clubPrice && p.clubPrice < p.price;
+    const priceDisplay = p.isGranel ? p.price * 100 : p.price; // Mostra por 100g ou Un
+    const clubDisplay = p.isGranel ? p.clubPrice * 100 : p.clubPrice;
+    
+    // Fallback Image
+    const imgUrl = p.img && p.img.length > 5 ? p.img : `https://placehold.co/300x300/e2e8f0/1e293b?text=${p.sku}`;
+    
+    return `
+      <div class="product-card bg-white rounded-xl overflow-hidden fade-in-up group relative">
+        <div class="card-image-wrapper cursor-pointer" onclick="openDetails(${p.id})">
+          <img src="${imgUrl}" alt="${p.name}" loading="lazy" onerror="this.src='https://placehold.co/300x300/fee2e2/ef4444?text=Sem+Foto'">
+          
+          <!-- Botão Detalhes (Olho) -->
+          <div class="details-overlay-btn">
+            <ion-icon name="eye-outline"></ion-icon> Detalhes
+          </div>
+        </div>
+
+        <div class="p-4 flex flex-col flex-1">
+          <!-- Ícones de Dieta (Visíveis) -->
+          ${generateDietIcons(p.tags)}
+
+          <div class="text-xs text-gray-500 mb-1">${p.sku} | ${p.cat}</div>
+          <h3 class="font-bold text-gray-800 text-sm md:text-base leading-snug mb-2 flex-1 cursor-pointer hover:text-green-700" onclick="openDetails(${p.id})">${p.name}</h3>
+          
+          <div class="mt-auto pt-3 border-t border-gray-100">
+            <div class="flex justify-between items-end mb-3">
+              <div class="flex flex-col">
+                ${hasClub ? `
+                  <span class="text-xs text-gray-400 line-through">R$ ${formatMoney(priceDisplay)}</span>
+                  <div class="flex items-center gap-1">
+                     <span class="text-green-700 font-bold text-lg">R$ ${formatMoney(clubDisplay)}</span>
+                     <ion-icon name="star" class="text-yellow-400 text-xs"></ion-icon>
+                  </div>
+                ` : `
+                  <span class="text-green-700 font-bold text-lg">R$ ${formatMoney(priceDisplay)}</span>
+                `}
+                <span class="text-[10px] text-gray-400">${p.isGranel ? 'Preço por 100g' : 'Unidade'}</span>
+              </div>
+            </div>
+
+            <!-- Controles de Compra -->
+            <div class="flex items-center gap-2">
+              <div class="flex items-center border border-gray-300 rounded-lg h-9 bg-gray-50">
+                 <button class="px-2 text-gray-600 hover:text-green-700" onclick="updateCardQty(${p.id}, -1)">-</button>
+                 <input type="text" id="qty-${p.id}" value="${p.step}${p.isGranel ? 'g' : ''}" class="w-12 text-center bg-transparent border-none text-xs font-semibold focus:ring-0 p-0" readonly data-val="${p.step}">
+                 <button class="px-2 text-gray-600 hover:text-green-700" onclick="updateCardQty(${p.id}, 1)">+</button>
+              </div>
+              <button class="flex-1 bg-green-600 hover:bg-green-700 text-white h-9 rounded-lg font-medium text-sm flex items-center justify-center gap-1 transition shadow-sm active:scale-95" onclick="addCart(${p.id})">
+                <ion-icon name="cart-outline"></ion-icon> Comprar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  $('no-products-message').style.display = pageItems.length === 0 ? 'block' : 'none';
+  renderPagination();
+  els.counter.innerText = `Exibindo ${pageItems.length} de ${state.filtered.length} produtos`;
+}
+
+// --- LÓGICA DE DETALHES (MODAL) ---
+
+function openDetails(id) {
+  const p = state.products.find(x => x.id === id);
+  if (!p) return;
+
+  // Imagem
+  const img = $('detail-image');
+  img.src = p.img || '';
+  img.onerror = () => { img.src = `https://placehold.co/300x300/e2e8f0/1e293b?text=${p.sku}`; };
+
+  $('detail-name').innerText = p.name;
+  $('detail-sku').innerText = p.sku;
+  $('detail-category').innerText = p.cat;
+
+  // Preço Modal
+  const hasClub = p.clubPrice && p.clubPrice < p.price;
+  const priceDisplay = p.isGranel ? p.price * 100 : p.price;
+  const clubDisplay = p.isGranel ? p.clubPrice * 100 : p.clubPrice;
+  const unitLabel = p.isGranel ? '/ 100g' : '';
+
+  let priceHtml = '';
+  if (hasClub) {
+    priceHtml = `
+      <div class="flex flex-col">
+        <span class="text-xs text-gray-500 line-through">De: R$ ${formatMoney(priceDisplay)}</span>
+        <div class="flex items-center gap-2">
+            <span class="text-2xl font-bold text-green-700">R$ ${formatMoney(clubDisplay)}${unitLabel}</span>
+            <span class="bg-yellow-100 text-yellow-700 text-xs px-2 py-1 rounded-full font-bold flex items-center gap-1">
+                <ion-icon name="star"></ion-icon> CLUB
+            </span>
+        </div>
+      </div>`;
+  } else {
+    priceHtml = `<span class="text-2xl font-bold text-green-700">R$ ${formatMoney(priceDisplay)}${unitLabel}</span>`;
+  }
+  $('detail-price-container').innerHTML = priceHtml;
+
+  // Tags (Texto badges)
+  const tagContainer = $('detail-tags-container');
+  tagContainer.innerHTML = '';
+  if (p.tags) {
+    p.tags.split(',').forEach(tag => {
+        const span = document.createElement('span');
+        span.className = 'bg-gray-100 text-gray-600 text-[10px] px-2 py-1 rounded uppercase font-semibold border border-gray-200';
+        span.innerText = tag.trim();
+        tagContainer.appendChild(span);
+    });
+  }
+
+  // Ingredientes
+  const ingElem = $('detail-ingredients');
+  const msgElem = $('no-ingredients-msg');
+  if (p.ingredients && p.ingredients.length > 2) {
+    ingElem.innerText = p.ingredients;
+    ingElem.classList.remove('hidden');
+    msgElem.classList.add('hidden');
+  } else {
+    ingElem.classList.add('hidden');
+    msgElem.classList.remove('hidden');
+  }
+
+  // Animação de entrada
+  els.detailsOverlay.classList.remove('hidden');
+  els.detailsOverlay.classList.add('flex'); // Garante display flex
+  setTimeout(() => {
+    els.detailsOverlay.classList.add('opacity-100');
+    els.detailsModal.classList.remove('scale-95', 'opacity-0');
+    els.detailsModal.classList.add('scale-100', 'opacity-100');
+  }, 10);
+  
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDetailsModal() {
+  els.detailsModal.classList.remove('scale-100', 'opacity-100');
+  els.detailsModal.classList.add('scale-95', 'opacity-0');
+  els.detailsOverlay.classList.remove('opacity-100');
+  
+  setTimeout(() => {
+    els.detailsOverlay.classList.add('hidden');
+    els.detailsOverlay.classList.remove('flex');
+    document.body.style.overflow = '';
+  }, 300);
+}
+
+// --- CARRINHO & CHECKOUT ---
+
+function addCart(id) {
+  const p = state.products.find(x => x.id === id);
+  const input = $(`qty-${id}`);
+  const qty = parseInt(input.dataset.val);
+
+  const existing = state.cart.find(x => x.id === id);
+  if (existing) {
+    existing.qty += qty;
+  } else {
+    state.cart.push({ ...p, qty });
+  }
+
+  saveCart();
+  renderCart();
+  
+  // Feedback visual
+  const btn = input.parentElement.nextElementSibling;
+  const originalHtml = btn.innerHTML;
+  btn.innerHTML = `<ion-icon name="checkmark-circle"></ion-icon> Adicionado!`;
+  btn.classList.add('bg-green-800');
+  setTimeout(() => {
+    btn.innerHTML = originalHtml;
+    btn.classList.remove('bg-green-800');
+  }, 1500);
+  
+  // Reset input
+  input.dataset.val = p.step;
+  input.value = `${p.step}${p.isGranel ? 'g' : ''}`;
+}
+
+function updateCardQty(id, dir) {
+  const p = state.products.find(x => x.id === id);
+  const input = $(`qty-${id}`);
+  let val = parseInt(input.dataset.val);
+  
+  val += (dir * p.step);
+  if (val < p.min) val = p.min;
+  
+  input.dataset.val = val;
+  input.value = `${val}${p.isGranel ? 'g' : ''}`;
+}
+
+function renderCart() {
+  const count = state.cart.length;
+  els.cartCount.innerText = count;
+  els.cartCountMob.innerText = count;
+  
+  let total = 0;
+  els.cartItems.innerHTML = state.cart.map((item, idx) => {
+    // Cálculo de preço: se item.clubPrice existe, usa. Senão item.price.
+    // O preço armazenado em 'item.price' no array products já é base (por 1g se granel).
+    // Mas vamos recalcular aqui pra garantir.
+    const priceToUse = (item.clubPrice && item.clubPrice < item.price) ? item.clubPrice : item.price;
+    const itemTotal = priceToUse * item.qty;
+    total += itemTotal;
+    
+    return `
+      <div class="flex items-start gap-3 border-b border-gray-100 pb-3">
+        <div class="flex-1">
+          <h4 class="font-medium text-sm text-gray-800 line-clamp-2">${item.name}</h4>
+          <div class="flex items-center justify-between mt-2">
+            <span class="text-xs text-gray-500">${item.isGranel ? item.qty + 'g' : item.qty + ' un'}</span>
+            <span class="font-bold text-green-700 text-sm">R$ ${formatMoney(itemTotal)}</span>
+          </div>
+        </div>
+        <button onclick="removeItem(${idx})" class="text-red-400 hover:text-red-600 p-1">
+          <ion-icon name="trash-outline"></ion-icon>
         </button>
-    `).join('');
+      </div>
+    `;
+  }).join('') || '<div class="text-center text-gray-400 mt-10"><ion-icon name="basket-outline" class="text-4xl"></ion-icon><p>Carrinho vazio</p></div>';
+
+  els.cartTotal.innerText = `R$ ${formatMoney(total)}`;
+  els.checkout.disabled = count === 0;
 }
 
-window.setFilter = (cat) => {
-    currentFilter = cat;
-    applyFilters();
-    renderFilters();
-};
+function removeItem(idx) {
+  state.cart.splice(idx, 1);
+  saveCart();
+  renderCart();
+}
+
+function saveCart() {
+  localStorage.setItem('nb_cart', JSON.stringify(state.cart));
+}
+
+// --- CHECKOUT WHATSAPP ---
+
+function startCheckout() {
+  els.nameOverlay.classList.remove('hidden');
+  els.nameOverlay.classList.add('flex');
+}
+
+function finishCheckout() {
+  const name = $('client-name').value.trim();
+  const obs = $('client-observation').value.trim();
+  
+  if (!name) {
+    $('name-error').classList.remove('hidden');
+    return;
+  }
+
+  let msg = `*NOVO PEDIDO - NATUBRAVA*\n`;
+  msg += `👤 Cliente: *${name}*\n`;
+  if (obs) msg += `📝 Obs: ${obs}\n`;
+  msg += `--------------------------------\n`;
+
+  let total = 0;
+  state.cart.forEach(item => {
+    const price = (item.clubPrice && item.clubPrice < item.price) ? item.clubPrice : item.price;
+    const sub = price * item.qty;
+    total += sub;
+    msg += `• ${item.name}\n   ${item.isGranel ? item.qty+'g' : item.qty+'un'} x R$${formatMoney(price * (item.isGranel ? 1000 : 1))}/${item.isGranel ? 'kg' : 'un'} = R$ ${formatMoney(sub)}\n`;
+  });
+
+  msg += `--------------------------------\n`;
+  msg += `*TOTAL ESTIMADO: R$ ${formatMoney(total)}*\n\n`;
+  msg += `Olá! Gostaria de confirmar disponibilidade e valores.`;
+
+  const link = `https://wa.me/${CONFIG.WHATSAPP}?text=${encodeURIComponent(msg)}`;
+  window.open(link, '_blank');
+  
+  // Limpar e fechar
+  state.cart = [];
+  saveCart();
+  renderCart();
+  closeCart();
+  $('name-modal-overlay').classList.add('hidden');
+  $('name-modal-overlay').classList.remove('flex');
+}
+
+// --- FILTROS & CATEGORIAS ---
+
+function renderCategories() {
+  const cats = ['Todos', ...new Set(state.products.map(p => p.cat))].sort();
+  els.cats.innerHTML = cats.map(c => `
+    <button class="cat-btn px-4 py-2 rounded-full text-sm font-medium bg-white text-gray-600 hover:bg-green-50 hover:text-green-700 ${c === 'Todos' ? 'active' : ''}" onclick="filterCat('${c}')">
+      ${c}
+    </button>
+  `).join('');
+}
+
+function filterCat(cat) {
+  state.currentCategory = cat;
+  state.currentPage = 1;
+  document.querySelectorAll('.cat-btn').forEach(b => {
+    b.classList.toggle('active', b.innerText === cat);
+  });
+  applyFilters();
+}
 
 function applyFilters() {
-    const term = normalizeText(document.getElementById('search-box').value);
-    filteredProducts = products.filter(p => {
-        const matchSearch = term ? normalizeText(p.name + p.sku).includes(term) : true;
-        const matchCat = currentFilter === 'Todos' || p.category === currentFilter;
-        return matchSearch && matchCat;
-    });
-    currentPage = 1;
-    renderProducts();
+  const term = els.search.value.toLowerCase();
+  
+  state.filtered = state.products.filter(p => {
+    const matchCat = state.currentCategory === 'Todos' || p.cat === state.currentCategory;
+    const matchSearch = p.name.toLowerCase().includes(term) || p.sku.toLowerCase().includes(term);
+    return matchCat && matchSearch;
+  });
+
+  state.currentPage = 1;
+  renderProducts();
 }
 
 function renderPagination() {
-    // Código básico de paginação se necessário, mas para simplificar aqui vamos mostrar tudo em scroll ou simples
-    // Se quiser paginação completa, avise. Por enquanto, limpo para não dar erro.
+  const totalPages = Math.ceil(state.filtered.length / CONFIG.ITEMS_PER_PAGE);
+  if (totalPages <= 1) {
+    els.pagination.innerHTML = '';
+    return;
+  }
+
+  let html = '';
+  // Prev
+  html += `<button class="p-2 border rounded hover:bg-gray-100 disabled:opacity-50" ${state.currentPage === 1 ? 'disabled' : ''} onclick="changePage(-1)"><ion-icon name="chevron-back"></ion-icon></button>`;
+  
+  // Current info
+  html += `<span class="px-4 text-sm font-medium">Pág ${state.currentPage} de ${totalPages}</span>`;
+  
+  // Next
+  html += `<button class="p-2 border rounded hover:bg-gray-100 disabled:opacity-50" ${state.currentPage === totalPages ? 'disabled' : ''} onclick="changePage(1)"><ion-icon name="chevron-forward"></ion-icon></button>`;
+  
+  els.pagination.innerHTML = html;
 }
 
-// ===== EVENT LISTENERS =====
-document.addEventListener('DOMContentLoaded', () => {
-    loadProducts();
-    
-    // Busca
-    document.getElementById('search-box').addEventListener('input', (e) => {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(applyFilters, 300);
-    });
+function changePage(dir) {
+  state.currentPage += dir;
+  renderProducts();
+  els.section.scrollIntoView({ behavior: 'smooth' });
+}
 
-    // Clique no Produto (Delegação de Eventos)
-    document.getElementById('product-list').addEventListener('click', e => {
-        const card = e.target.closest('.product-card');
-        if (!card) return;
-        const id = parseInt(card.dataset.id);
+// --- UTILITÁRIOS ---
 
-        // Se clicou na imagem, no botão detalhes ou no título
-        if (e.target.closest('.product-image-container') || e.target.closest('.info-btn')) {
-            openProductDetails(id);
-            return;
-        }
+function formatMoney(val) {
+  return val.toFixed(2).replace('.', ',');
+}
 
-        // Se clicou em Adicionar
-        if (e.target.closest('.add-to-cart-btn')) {
-            const qtySpan = card.querySelector('.product-quantity');
-            const qty = parseInt(qtySpan.innerText.replace('g', ''));
-            addToCart(id, qty);
-        }
+function showError(msg) {
+  els.loading.style.display = 'none';
+  els.section.style.display = 'none';
+  els.error.classList.remove('hidden');
+  els.errDetails.innerText = msg;
+}
 
-        // Mudar Quantidade
-        if (e.target.closest('.product-quantity-change')) {
-            const btn = e.target.closest('.product-quantity-change');
-            const change = parseInt(btn.dataset.change);
-            const qtySpan = card.querySelector('.product-quantity');
-            const p = products.find(prod => prod.id === id);
-            const step = p.isGranel ? CONFIG.MIN_GRANEL_QUANTITY : 1;
-            let val = parseInt(qtySpan.innerText.replace('g', '')) + (change * step);
-            if (val >= step) qtySpan.innerText = p.isGranel ? val + 'g' : val;
-        }
-    });
+function closeCart() {
+  els.cartOverlay.classList.remove('open');
+  els.cartPanel.classList.remove('open');
+}
 
-    // Fechar Modais
-    document.querySelectorAll('[id$="-overlay"]').forEach(el => {
-        el.addEventListener('click', (e) => {
-            if (e.target === el) el.classList.remove('open');
-        });
-    });
-    
-    document.getElementById('close-details-modal-button').addEventListener('click', () => {
-        document.getElementById('product-details-modal-overlay').classList.remove('open');
-    });
+// --- EVENT LISTENERS ---
 
-    // Carrinho Toggle
-    const toggleCart = () => {
-        document.getElementById('cart-panel').classList.toggle('open');
-        document.getElementById('cart-overlay').classList.toggle('open');
-    };
-    document.getElementById('cart-button').onclick = toggleCart;
-    document.getElementById('cart-button-mobile').onclick = toggleCart;
-    document.getElementById('close-cart-button').onclick = toggleCart;
+els.search.addEventListener('input', () => { applyFilters(); });
+els.retry.addEventListener('click', () => { location.reload(); });
+
+// Cart Toggles
+[els.cartBtn, els.cartBtnMob].forEach(b => b.addEventListener('click', () => {
+  els.cartOverlay.classList.add('open');
+  els.cartPanel.classList.add('open');
+}));
+els.closeCart.addEventListener('click', closeCart);
+els.cartOverlay.addEventListener('click', (e) => { if(e.target === els.cartOverlay) closeCart(); });
+
+// Checkout
+els.checkout.addEventListener('click', startCheckout);
+els.cancelCheckout.addEventListener('click', () => $('name-modal-overlay').classList.add('hidden'));
+els.confirmCheckout.addEventListener('click', finishCheckout);
+
+// Club Info
+els.clubInfoBtn.addEventListener('click', () => { els.clubOverlay.classList.remove('hidden'); els.clubOverlay.classList.add('flex'); });
+els.closeClub.addEventListener('click', () => { els.clubOverlay.classList.add('hidden'); els.clubOverlay.classList.remove('flex'); });
+els.clubOverlay.addEventListener('click', (e) => { if(e.target === els.clubOverlay) els.closeClub.click(); });
+
+// Details Modal
+els.closeDetails.addEventListener('click', closeDetailsModal);
+els.detailsOverlay.addEventListener('click', (e) => { if(e.target === els.detailsOverlay) closeDetailsModal(); });
+
+// Back to Top
+window.addEventListener('scroll', () => {
+  const btn = $('back-to-top');
+  if (window.scrollY > 300) {
+    btn.classList.remove('translate-y-20', 'opacity-0');
+  } else {
+    btn.classList.add('translate-y-20', 'opacity-0');
+  }
 });
+$('back-to-top').addEventListener('click', () => window.scrollTo({top: 0, behavior: 'smooth'}));
 
-// ===== CARRINHO (SIMPLIFICADO) =====
-function addToCart(id, qty) {
-    const p = products.find(x => x.id === id);
-    if (!p) return;
-    
-    const exist = cart.find(x => x.id === id);
-    if (exist) exist.qty += qty;
-    else cart.push({ ...p, qty });
-    
-    updateCartUI();
-    // Efeito Visual
-    const btn = document.getElementById('cart-button');
-    btn.classList.add('scale-125');
-    setTimeout(() => btn.classList.remove('scale-125'), 200);
-}
-
-function updateCartUI() {
-    const container = document.getElementById('cart-items');
-    container.innerHTML = cart.map(item => `
-        <div class="flex justify-between items-center border-b pb-2">
-            <div>
-                <p class="font-bold text-sm">${item.name}</p>
-                <p class="text-xs text-gray-500">${item.isGranel ? item.qty+'g' : item.qty+' un'}</p>
-            </div>
-            <div class="text-right">
-                <p class="font-bold text-green-700">R$ ${formatPrice(item.price * item.qty)}</p>
-                <button onclick="removeFromCart(${item.id})" class="text-red-500 text-xs">Remover</button>
-            </div>
-        </div>
-    `).join('');
-    
-    const total = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
-    document.getElementById('cart-total').innerText = 'R$ ' + formatPrice(total);
-    document.getElementById('cart-count').innerText = cart.length;
-    document.getElementById('cart-count-mobile').innerText = cart.length;
-    document.getElementById('checkout-button').disabled = cart.length === 0;
-}
-
-window.removeFromCart = (id) => {
-    cart = cart.filter(x => x.id !== id);
-    updateCartUI();
-};
-
-window.openNotifyModal = (id) => {
-    const p = products.find(x => x.id === id);
-    document.getElementById('notify-product-name').innerText = p.name;
-    document.getElementById('notify-modal-overlay').classList.add('open');
-};
+// Init
+init();
