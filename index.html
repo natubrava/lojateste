@@ -4,245 +4,242 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NatuBrava Produtos Naturais - Catálogo Online</title>
+  <meta name="description" content="NatuBrava Produtos Naturais oferece alimentos funcionais, suplementos, chás e cosméticos naturais na Praia Brava em Itajaí.">
   
-  <!-- Fontes e Tailwind -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
   <link rel="stylesheet" href="tailwind-custom.css">
   <link rel="stylesheet" href="styles.css">
   
-  <!-- Ícones -->
   <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
   <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </head>
-<body class="bg-gray-50 text-gray-800">
+<body class="bg-gray-50 text-gray-800 font-inter">
 
   <!-- HEADER -->
   <header class="bg-white shadow-md sticky top-0 z-50">
-    <nav class="container mx-auto px-4 py-3 flex justify-between items-center">
+    <nav class="container mx-auto px-4 py-3 flex justify-between items-center min-h-[70px]">
       <a href="#" class="flex items-center">
-        <img src="LOGOVERDE.webp" alt="Logo da NatuBrava" class="h-10 sm:h-12 w-auto">
+        <!-- Substitua pelo seu logo real se tiver, ou mantenha este texto estilizado -->
+        <div class="flex flex-col">
+          <span class="text-xl font-bold text-green-700 tracking-tight">NatuBrava</span>
+          <span class="text-xs text-green-600 font-medium -mt-1">Produtos Naturais</span>
+        </div>
       </a>
       
       <!-- Menu Desktop -->
-      <div class="hidden sm:flex items-center space-x-2">
-        <a href="#produtos" class="header-nav-btn">Produtos</a>
-        <a href="#sobre" class="header-nav-btn">Sobre</a>
-        <a href="#contato" class="header-nav-btn">Contato</a>
-        <button id="club-info-button" class="header-nav-btn">
-          <ion-icon name="star-outline" class="mr-1 text-base"></ion-icon>Club NatuBrava
+      <div class="hidden md:flex items-center space-x-4">
+        <a href="#produtos" class="header-nav-btn">Catálogo</a>
+        <button id="club-info-button" class="header-nav-btn club-btn">
+          <ion-icon name="star" class="mr-1"></ion-icon>Club
         </button>
-        <button id="delivery-info-button" class="header-nav-btn">Entregas</button>
-      </div>
-      
-      <!-- Botões Mobile -->
-      <div class="flex sm:hidden items-center space-x-2">
-        <button id="mobile-menu-button" class="text-green-700 p-2 text-2xl"><ion-icon name="menu-outline"></ion-icon></button>
-        <button id="cart-button-mobile" class="relative text-green-700 p-2 text-2xl">
-          <ion-icon name="cart-outline"></ion-icon>
-          <span id="cart-count-mobile" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">0</span>
-        </button>
-      </div>
-      
-      <!-- Botão Carrinho Desktop -->
-      <div class="hidden sm:block">
-        <button id="cart-button" class="relative text-green-700 p-2 text-2xl hover:bg-green-50 rounded-full transition">
-          <ion-icon name="cart-outline"></ion-icon>
+        <button id="cart-button" class="relative bg-green-100 text-green-800 p-2 rounded-full hover:bg-green-200 transition">
+          <ion-icon name="cart-outline" class="text-2xl"></ion-icon>
           <span id="cart-count" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">0</span>
         </button>
       </div>
-    </nav>
-    
-    <!-- Menu Mobile Expandido -->
-    <div id="mobile-menu" class="sm:hidden bg-white border-t border-gray-200 hidden">
-      <div class="px-4 py-3 space-y-3">
-        <a href="#produtos" class="block text-green-700 font-medium py-2">📱 Produtos</a>
-        <a href="#sobre" class="block text-green-700 font-medium py-2">ℹ️ Sobre</a>
-        <a href="#contato" class="block text-green-700 font-medium py-2">📞 Contato</a>
-        <button id="club-info-button-mobile" class="block w-full text-left text-green-700 font-medium py-2">⭐ Club NatuBrava</button>
-        <button id="delivery-info-button-mobile" class="block w-full text-left text-green-700 font-medium py-2">🚚 Entregas</button>
+      
+      <!-- Menu Mobile -->
+      <div class="flex md:hidden items-center space-x-3">
+        <button id="cart-button-mobile" class="relative text-green-700 p-2">
+          <ion-icon name="cart-outline" class="text-2xl"></ion-icon>
+          <span id="cart-count-mobile" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">0</span>
+        </button>
       </div>
-    </div>
+    </nav>
   </header>
 
   <main>
     <!-- Banner -->
-    <section class="bg-gradient-to-r from-green-500 to-lime-400 text-white py-10 px-6 text-center">
-      <h1 class="text-2xl sm:text-3xl font-bold mb-2">Nosso Catálogo Online</h1>
-      <p class="text-md md:text-lg mb-5">Explore nossos produtos e monte seu pedido para enviar via WhatsApp.</p>
-      <a href="#produtos" class="bg-white text-green-600 font-semibold py-2 px-6 rounded-full hover:bg-gray-100 transition">Ver Produtos</a>
+    <section class="bg-gradient-to-r from-green-600 to-lime-500 text-white py-10 px-4 text-center">
+      <h1 class="text-2xl md:text-4xl font-bold mb-2">Saúde e Bem-estar</h1>
+      <p class="text-sm md:text-lg opacity-90">Faça seu pedido online e receba em casa ou retire na loja.</p>
     </section>
 
     <!-- Loading -->
-    <div id="loading-status" class="container mx-auto px-4 py-8 text-center">
-      <div class="loading-spinner"></div>
-      <p class="mt-4 text-gray-600">Carregando produtos da planilha...</p>
+    <div id="loading-status" class="container mx-auto px-4 py-12 text-center">
+      <div class="loading-spinner mx-auto"></div>
+      <p class="mt-4 text-gray-600 animate-pulse">Carregando catálogo...</p>
     </div>
 
     <!-- Área de Produtos -->
-    <section id="produtos" class="container mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-12" style="display: none;">
-      <h2 class="text-2xl sm:text-3xl font-bold text-center text-green-800 mb-6">Nossos Produtos</h2>
+    <section id="produtos" class="container mx-auto px-4 py-8" style="display: none;">
       
-      <!-- Busca -->
-      <div class="max-w-xl mx-auto mb-6 relative">
-        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <ion-icon name="search-outline" class="text-gray-400"></ion-icon>
+      <!-- Busca e Filtros -->
+      <div class="max-w-2xl mx-auto mb-8 space-y-4">
+        <div class="relative">
+          <ion-icon name="search-outline" class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg"></ion-icon>
+          <input type="search" id="search-box" placeholder="O que você procura hoje?" class="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-full shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition">
         </div>
-        <input type="search" id="search-box" placeholder="Buscar por nome ou código..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:ring-2 focus:ring-green-500 focus:border-green-500">
+        
+        <!-- Categorias (Scroll Horizontal) -->
+        <div id="category-filters" class="flex overflow-x-auto pb-2 gap-2 scrollbar-hide">
+          <!-- Injetado via JS -->
+        </div>
+        
+        <div id="product-counter" class="text-center text-sm text-gray-500"></div>
       </div>
 
-      <!-- Filtros -->
-      <div id="category-filters" class="mb-8"></div>
-      
-      <!-- Contador -->
-      <div id="product-counter" class="text-center text-sm text-gray-600 mb-4"></div>
-      
-      <!-- Lista -->
-      <div id="product-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6"></div>
-      
-      <p id="no-products-message" class="text-center text-gray-500 hidden col-span-full">Nenhum produto encontrado.</p>
-      
-      <!-- Paginação -->
-      <div id="pagination" class="flex justify-center items-center mt-8 gap-2 hidden"></div>
-    </section>
-
-    <!-- Erro -->
-    <section id="error-section" class="container mx-auto px-4 py-16 text-center hidden">
-      <div class="max-w-md mx-auto">
-        <ion-icon name="alert-circle-outline" class="text-6xl text-red-500 mb-4"></ion-icon>
-        <h3 class="text-xl font-semibold text-gray-800 mb-4">Erro ao Carregar Produtos</h3>
-        <p id="error-details" class="text-gray-600 mb-6"></p>
-        <button id="retry-button" class="bg-green-600 text-white px-6 py-3 rounded-lg">Tentar Novamente</button>
+      <!-- Grid de Produtos -->
+      <div id="product-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <!-- Cards injetados via JS -->
       </div>
+      
+      <p id="no-products-message" class="hidden text-center text-gray-500 py-10">Nenhum produto encontrado com esses filtros.</p>
+      
+      <div id="pagination" class="flex justify-center items-center mt-10 gap-2"></div>
     </section>
 
-    <!-- Rodapé Simples -->
-    <section id="sobre" class="bg-white py-16 px-6 text-center">
-        <div class="container mx-auto max-w-3xl">
-            <h2 class="text-2xl font-bold text-green-800 mb-4">Sobre a NatuBrava</h2>
-            <p class="text-gray-700">Sua loja de produtos naturais na Praia Brava - Itajaí/SC.</p>
-        </div>
+    <!-- Seção de Erro -->
+    <section id="error-section" class="hidden container mx-auto px-4 py-16 text-center">
+      <ion-icon name="cloud-offline-outline" class="text-6xl text-gray-300 mb-4"></ion-icon>
+      <h3 class="text-xl font-semibold text-gray-800">Ops! Tivemos um problema.</h3>
+      <p id="error-details" class="text-gray-600 mb-6 text-sm mt-2"></p>
+      <button id="retry-button" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">Tentar Novamente</button>
     </section>
   </main>
 
-  <!-- Botão Voltar ao Topo -->
-  <button id="back-to-top" class="back-to-top"><ion-icon name="chevron-up-outline"></ion-icon></button>
-
-  <!-- ================= MODAIS ================= -->
-
-  <!-- 1. Modal Carrinho -->
-  <div id="cart-overlay" class="cart-overlay"></div>
-  <div id="cart-panel" class="cart-panel fixed top-0 right-0 w-full max-w-sm h-full bg-white shadow-xl z-50 flex flex-col">
-    <div class="flex justify-between items-center p-4 border-b">
-      <h3 class="text-lg font-semibold text-green-800">Seu Carrinho</h3>
-      <button id="close-cart-button" class="text-gray-500 text-2xl"><ion-icon name="close-outline"></ion-icon></button>
+  <footer class="bg-gray-800 text-gray-300 py-8 text-center text-sm mt-12">
+    <p>© <span id="current-year"></span> NatuBrava Produtos Naturais.</p>
+    <div class="flex justify-center gap-4 mt-3 text-2xl">
+      <a href="https://www.instagram.com/natubrava" target="_blank" class="hover:text-green-400"><ion-icon name="logo-instagram"></ion-icon></a>
+      <a href="https://wa.me/554733483186" target="_blank" class="hover:text-green-400"><ion-icon name="logo-whatsapp"></ion-icon></a>
     </div>
-    <div id="cart-items" class="flex-grow overflow-y-auto p-4 space-y-4"></div>
+  </footer>
+
+  <!-- MODAL: Carrinho -->
+  <div id="cart-overlay" class="fixed inset-0 bg-black/50 z-50 hidden transition-opacity opacity-0"></div>
+  <aside id="cart-panel" class="fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 flex flex-col">
+    <div class="p-4 border-b flex justify-between items-center bg-green-50">
+      <h2 class="font-bold text-green-800 flex items-center gap-2"><ion-icon name="basket-outline"></ion-icon> Seu Pedido</h2>
+      <button id="close-cart-button" class="text-2xl text-gray-500 hover:text-red-500"><ion-icon name="close-outline"></ion-icon></button>
+    </div>
+    
+    <div id="cart-items" class="flex-1 overflow-y-auto p-4 space-y-4">
+      <div class="text-center text-gray-400 mt-10 flex flex-col items-center">
+        <ion-icon name="cart-outline" class="text-4xl mb-2"></ion-icon>
+        <p>Seu carrinho está vazio.</p>
+      </div>
+    </div>
+    
     <div class="p-4 border-t bg-gray-50">
-      <div class="flex justify-between font-bold text-lg mb-4">
-        <span>Total:</span>
-        <span id="cart-total" class="text-green-700">R$ 0,00</span>
+      <div class="flex justify-between items-end mb-4">
+        <span class="text-sm text-gray-600">Total Estimado:</span>
+        <span id="cart-total" class="text-2xl font-bold text-green-700">R$ 0,00</span>
       </div>
-      <button id="checkout-button" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold" disabled>Finalizar Pedido (WhatsApp)</button>
-    </div>
-  </div>
-
-  <!-- 2. Modal Detalhes do Produto (REFORMULADO) -->
-  <div id="product-details-modal-overlay">
-    <div id="product-details-modal" class="bg-white rounded-lg shadow-xl w-full max-w-4xl m-4 overflow-hidden relative">
-      <button id="close-details-modal-button" class="absolute top-3 right-3 z-20 bg-gray-100 rounded-full p-2 hover:bg-gray-200">
-        <ion-icon name="close-outline" class="text-2xl"></ion-icon>
+      <button id="checkout-button" disabled class="w-full bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+        <span>Finalizar no WhatsApp</span>
+        <ion-icon name="logo-whatsapp"></ion-icon>
       </button>
+    </div>
+  </aside>
 
-      <div id="detail-modal-body">
-        <!-- Coluna Esquerda: Imagem -->
-        <div id="detail-image-container">
-            <img id="detail-image" src="" alt="Produto">
-            <!-- Título no Mobile aparece aqui via script se necessário, ou ajustamos no CSS -->
-            <div class="md:hidden ml-4">
-                <h2 id="detail-name-mobile" class="text-lg font-bold text-gray-900 leading-tight"></h2>
-                <span id="detail-sku-mobile" class="text-xs text-gray-500"></span>
-            </div>
+  <!-- MODAL: Detalhes do Produto (Otimizado Mobile) -->
+  <div id="product-details-modal-overlay" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center p-4">
+    <div id="product-details-modal" class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col transform scale-95 opacity-0 transition-all duration-300">
+      
+      <!-- Header do Modal: Imagem Pequena + Título -->
+      <div class="bg-gray-50 p-4 border-b flex gap-4 items-start relative">
+        <button id="close-details-modal-button" class="absolute top-2 right-2 text-gray-400 hover:text-gray-600 p-2">
+          <ion-icon name="close-circle" class="text-3xl"></ion-icon>
+        </button>
+
+        <!-- Imagem Thumbnail (Mobile Friendly) -->
+        <div class="w-24 h-24 sm:w-32 sm:h-32 flex-shrink-0 bg-white rounded-lg border p-1 flex items-center justify-center">
+          <img id="detail-image" src="" class="max-w-full max-h-full object-contain" alt="Produto">
         </div>
 
-        <!-- Coluna Direita: Informações -->
-        <div id="detail-content">
-            <!-- Cabeçalho Desktop -->
-            <div class="hidden md:block mb-4">
-              <span id="detail-category" class="text-xs font-bold text-green-600 uppercase tracking-wider bg-green-50 px-2 py-1 rounded">Categoria</span>
-              <h2 id="detail-name" class="text-2xl font-bold text-gray-900 mt-2">Nome do Produto</h2>
-              <p class="text-gray-500 text-sm">Cód.: <span id="detail-sku">000</span></p>
-            </div>
-
-            <!-- Tags (Sem Glúten, Vegano, etc) -->
-            <div id="detail-tags-container" class="mb-6"></div>
-
-            <!-- Preço (Apenas Informativo) -->
-            <div id="detail-price-container" class="mb-6 p-3 bg-gray-50 rounded border border-gray-100"></div>
-
-            <!-- Ingredientes -->
-            <div class="mb-4">
-                <h4 class="font-bold text-gray-800 mb-2 flex items-center border-b pb-2">
-                    <ion-icon name="nutrition-outline" class="mr-2 text-green-600 text-lg"></ion-icon>
-                    Ingredientes e Informações
-                </h4>
-                <div id="detail-ingredients" class="text-sm text-gray-600 leading-relaxed space-y-2">
-                    <!-- Texto injetado via JS -->
-                </div>
-            </div>
+        <!-- Informações Principais -->
+        <div class="flex-1 pr-8">
+          <span id="detail-category" class="text-xs font-bold text-green-600 uppercase tracking-wider">Categoria</span>
+          <h3 id="detail-name" class="text-lg sm:text-xl font-bold text-gray-900 leading-tight mt-1">Nome do Produto</h3>
+          <p class="text-xs text-gray-500 mt-1">Cód: <span id="detail-sku">000</span></p>
+          
+          <!-- Tags no Modal -->
+          <div id="detail-tags-container" class="flex flex-wrap gap-1 mt-2"></div>
         </div>
       </div>
+
+      <!-- Corpo do Modal: Scrollável -->
+      <div class="p-5 overflow-y-auto">
+        <!-- Preço em Destaque -->
+        <div id="detail-price-container" class="mb-5 p-3 bg-green-50 border border-green-100 rounded-lg inline-block">
+          <!-- Injetado via JS -->
+        </div>
+
+        <!-- Ingredientes -->
+        <div id="detail-ingredients-section" class="space-y-2">
+          <h4 class="font-semibold text-gray-800 flex items-center gap-2 border-b pb-1">
+            <ion-icon name="nutrition" class="text-green-600"></ion-icon>
+            Ingredientes & Informações
+          </h4>
+          <p id="detail-ingredients" class="text-sm text-gray-600 leading-relaxed text-justify bg-gray-50 p-3 rounded-md">
+            <!-- Texto Injetado -->
+          </p>
+          <p id="no-ingredients-msg" class="text-sm text-gray-400 italic hidden">Nenhuma informação adicional disponível.</p>
+        </div>
+        
+        <div class="mt-6 text-center">
+            <p class="text-xs text-gray-500 italic border-t pt-3">
+                * Para comprar este produto, feche esta janela e adicione-o ao carrinho diretamente no card.
+            </p>
+        </div>
+      </div>
+      
+      <!-- Footer: Botão Fechar -->
+      <div class="p-3 border-t bg-gray-50 text-right">
+        <button onclick="closeDetailsModal()" class="px-6 py-2 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 transition">
+          Fechar
+        </button>
+      </div>
+
     </div>
   </div>
 
-  <!-- 3. Modal Finalizar Pedido -->
-  <div id="name-modal-overlay">
-    <div id="name-modal" class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md m-4">
-        <h3 class="text-xl font-bold text-center mb-4">Dados para o Pedido</h3>
-        <input type="text" id="client-name" placeholder="Seu Nome Completo *" class="w-full border p-3 rounded mb-3">
-        <textarea id="client-observation" placeholder="Observações (opcional)" class="w-full border p-3 rounded mb-3" rows="3"></textarea>
-        <p id="name-error" class="text-red-500 text-sm hidden mb-3">Preencha seu nome.</p>
-        <div class="flex justify-end gap-2">
-            <button id="cancel-checkout-button" class="bg-gray-200 px-4 py-2 rounded">Cancelar</button>
-            <button id="confirm-checkout-button" class="bg-green-600 text-white px-4 py-2 rounded font-bold">Enviar</button>
+  <!-- MODAL: Identificação Checkout -->
+  <div id="name-modal-overlay" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center p-4">
+    <div id="name-modal" class="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm">
+        <div class="text-center mb-4">
+            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <ion-icon name="logo-whatsapp" class="text-2xl text-green-600"></ion-icon>
+            </div>
+            <h3 class="text-lg font-bold">Enviar Pedido</h3>
+            <p class="text-sm text-gray-600">Informe seu nome para o atendente.</p>
+        </div>
+        <div class="space-y-3">
+            <input type="text" id="client-name" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-green-500 focus:border-green-500" placeholder="Seu Nome Completo">
+            <textarea id="client-observation" rows="2" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-green-500 focus:border-green-500" placeholder="Observações (Opcional)"></textarea>
+            <p id="name-error" class="text-red-500 text-xs hidden">Por favor, digite seu nome.</p>
+        </div>
+        <div class="mt-5 flex gap-3">
+            <button id="cancel-checkout-button" class="flex-1 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">Cancelar</button>
+            <button id="confirm-checkout-button" class="flex-1 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700">Enviar</button>
         </div>
     </div>
   </div>
 
-  <!-- 4. Modal Avise-me -->
-  <div id="notify-modal-overlay">
-     <div id="notify-modal" class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md m-4">
-         <h3 class="text-lg font-bold text-blue-800 mb-4">Avise-me quando chegar</h3>
-         <div class="bg-blue-50 p-3 rounded mb-4">
-            <p id="notify-product-name" class="font-bold"></p>
-         </div>
-         <input type="text" id="client-notify-name" placeholder="Nome" class="w-full border p-2 rounded mb-2">
-         <input type="tel" id="client-notify-phone" placeholder="WhatsApp" class="w-full border p-2 rounded mb-2">
-         <button id="confirm-notify-button" class="w-full bg-blue-600 text-white py-2 rounded font-bold mt-2">Avise-me</button>
-         <button id="close-notify-modal-button" class="w-full mt-2 text-gray-500 text-sm underline">Cancelar</button>
-     </div>
+  <!-- MODAL: Club Info -->
+  <div id="club-info-modal-overlay" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center p-4">
+    <div id="club-info-modal" class="bg-white rounded-xl shadow-xl p-6 w-full max-w-md relative">
+        <button id="close-club-modal-button" class="absolute top-3 right-3 text-2xl text-gray-400 hover:text-gray-600"><ion-icon name="close-outline"></ion-icon></button>
+        <div class="text-center">
+            <ion-icon name="star" class="text-4xl text-yellow-400 mb-2"></ion-icon>
+            <h3 class="text-xl font-bold text-green-800">Club NatuBrava</h3>
+            <p class="text-gray-600 mt-2 text-sm">Clientes do clube têm descontos exclusivos em produtos selecionados (marcados com a etiqueta verde).</p>
+            <div class="mt-4 bg-green-50 p-3 rounded-lg border border-green-100 text-sm text-green-800">
+                <strong>Como participar?</strong><br>
+                É grátis! Peça para se cadastrar no balcão ou pelo WhatsApp.
+            </div>
+        </div>
+    </div>
   </div>
 
-  <!-- Outros Modais Auxiliares -->
-  <div id="club-info-modal-overlay">
-      <div id="club-info-modal" class="bg-white rounded-lg p-6 max-w-md m-4 relative">
-          <button id="close-club-modal-button" class="absolute top-2 right-2 text-2xl"><ion-icon name="close-outline"></ion-icon></button>
-          <h3 class="font-bold text-lg mb-2">Club NatuBrava</h3>
-          <p class="text-sm">Faça parte e ganhe descontos exclusivos!</p>
-          <a href="https://wa.me/554733483186" target="_blank" class="block text-center bg-green-600 text-white py-2 rounded mt-4">Quero participar</a>
-      </div>
-  </div>
+  <button id="back-to-top" class="fixed bottom-6 right-6 bg-green-600 text-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center text-2xl hover:bg-green-700 transition transform translate-y-20 opacity-0 z-40">
+    <ion-icon name="chevron-up-outline"></ion-icon>
+  </button>
 
-  <div id="delivery-modal-overlay">
-      <div id="delivery-modal" class="bg-white rounded-lg p-6 max-w-md m-4 relative">
-          <button id="close-delivery-modal-button" class="absolute top-2 right-2 text-2xl"><ion-icon name="close-outline"></ion-icon></button>
-          <h3 class="font-bold text-lg mb-2">Entregas</h3>
-          <p class="text-sm">Entregamos via Uber Flash ou retirada na loja.</p>
-          <button id="ok-delivery-modal-button" class="bg-green-600 text-white px-4 py-2 rounded mt-4 w-full">Entendi</button>
-      </div>
-  </div>
-
-  <script src="script.js"></script>
+  <script src="script.js" defer></script>
 </body>
 </html>
