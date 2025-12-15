@@ -393,6 +393,61 @@
     </div>
   </div>
 
+  <!-- Modal Detalhes do Produto -->
+  <div id="product-details-modal-overlay" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden items-center justify-center">
+    <div id="product-details-modal" class="bg-white rounded-lg shadow-xl w-full max-w-4xl m-4 overflow-hidden transform transition-transform duration-300 scale-95 opacity-0 flex flex-col max-h-[90vh]">
+      <div class="relative bg-white flex-grow overflow-y-auto">
+        <button id="close-details-modal-button" class="absolute top-4 right-4 z-10 bg-white bg-opacity-80 rounded-full p-2 text-gray-500 hover:text-gray-800 hover:bg-opacity-100 transition-all shadow-sm" aria-label="Fechar Modal">
+          <ion-icon name="close-outline" class="text-2xl"></ion-icon>
+        </button>
+
+        <div class="product-details-layout flex flex-col md:flex-row">
+          <!-- Coluna Esquerda: Imagem -->
+          <div class="product-details-image-col relative w-full md:w-1/2 bg-gray-50 flex items-center justify-center p-6 md:min-h-[400px]">
+            <img id="detail-image" src="" alt="Produto" class="product-details-image max-h-[300px] md:max-h-[400px] w-auto object-contain rounded-md shadow-sm">
+            <div id="detail-out-of-stock-badge" class="hidden absolute top-6 left-6 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-bold uppercase tracking-wide shadow-md">Esgotado</div>
+          </div>
+
+          <!-- Coluna Direita: Informações -->
+          <div class="product-details-info-col w-full md:w-1/2 p-6 md:p-8 flex flex-col">
+            <div class="mb-4">
+              <span id="detail-category" class="text-sm font-semibold text-green-600 uppercase tracking-wider bg-green-50 px-2 py-1 rounded">Categoria</span>
+              <h2 id="detail-name" class="text-2xl md:text-3xl font-bold text-gray-900 mt-2 mb-1">Nome do Produto</h2>
+              <p class="text-gray-500 text-sm">Cód.: <span id="detail-sku">000</span></p>
+            </div>
+
+            <!-- Preços -->
+            <div id="detail-price-container" class="mb-6">
+              <!-- Injetado via JS -->
+            </div>
+
+            <!-- Tags -->
+            <div id="detail-tags-container" class="flex flex-wrap gap-2 mb-6">
+              <!-- Tags injetadas via JS -->
+            </div>
+
+            <!-- Ingredientes -->
+            <div id="detail-ingredients-container" class="mb-6 bg-gray-50 p-4 rounded-lg border border-gray-100">
+              <h4 class="font-semibold text-gray-700 mb-2 flex items-center">
+                <ion-icon name="nutrition-outline" class="mr-2"></ion-icon> Ingredientes
+              </h4>
+              <p id="detail-ingredients" class="text-sm text-gray-600 leading-relaxed italic">
+                <!-- Ingredientes injetados via JS -->
+              </p>
+            </div>
+
+            <!-- Ações (Spacer para empurrar para baixo) -->
+            <div id="detail-actions-section" class="mt-auto pt-4 border-t border-gray-100">
+              <div id="detail-actions" class="flex flex-col sm:flex-row items-center gap-4">
+                 <!-- Controles de Quantidade e Botão Adicionar (Injetado via JS) -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="script.js" defer></script>
 </body>
 </html>
