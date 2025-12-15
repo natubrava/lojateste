@@ -222,42 +222,102 @@ html { scroll-behavior: smooth; }
 }
 
 /* ===== PADRONIZAÇÃO DE IMAGENS E CARDS ===== */
-.product-card { transition: all 0.3s ease; display: flex; flex-direction: column; height: 100%; min-height: 420px; }
+.product-card { transition: all 0.3s ease; display: flex; flex-direction: column; height: 100%; min-height: 380px; }
 .product-card:hover { transform: translateY(-2px); }
-.product-image-container { position: relative; width: 100%; height: 220px !important; min-height: 220px; max-height: 220px; overflow: hidden; background-color: #ffffff; border-radius: 0.5rem 0.5rem 0 0; display: flex; align-items: center; justify-content: center; border: 1px solid #f1f5f9; cursor: pointer; }
-.product-image { width: 100% !important; height: 100% !important; min-height: 220px !important; max-height: 220px !important; object-fit: contain !important; object-position: center !important; transition: transform 0.3s ease; background-color: #fff; display: block; padding: 8px; }
+
+/* ALTURA REDUZIDA CONFORME SOLICITADO */
+.product-image-container { 
+  position: relative; 
+  width: 100%; 
+  height: 150px !important; /* Reduzido de 220px */
+  min-height: 150px; 
+  max-height: 150px; 
+  overflow: hidden; 
+  background-color: #ffffff; 
+  border-radius: 0.5rem 0.5rem 0 0; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  border: 1px solid #f1f5f9; 
+}
+
+/* Cursor pointer apenas se tiver detalhes (via JS) */
+.product-image-container.has-details-cursor {
+  cursor: pointer;
+}
+
+.product-image { 
+  width: 100% !important; 
+  height: 100% !important; 
+  min-height: 150px !important; /* Reduzido */
+  max-height: 150px !important; /* Reduzido */
+  object-fit: contain !important; 
+  object-position: center !important; 
+  transition: transform 0.3s ease; 
+  background-color: #fff; 
+  padding: 8px; 
+}
+
 .product-card:hover .product-image { transform: scale(1.03); }
-.product-image-error { display: flex !important; align-items: center; justify-content: center; width: 100%; height: 220px !important; min-height: 220px !important; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); color: #666; font-size: 0.9rem; text-align: center; padding: 1rem; border: 1px solid #dee2e6; }
+
+.product-image-error { 
+  display: flex !important; 
+  align-items: center; 
+  justify-content: center; 
+  width: 100%; 
+  height: 150px !important; /* Reduzido */
+  min-height: 150px !important; 
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); 
+  color: #666; 
+  font-size: 0.9rem; 
+  text-align: center; 
+  padding: 1rem; 
+  border: 1px solid #dee2e6; 
+}
+
 .product-card-content { flex: 1; display: flex; flex-direction: column; padding: 1rem; min-height: 200px; }
 .product-card-footer { margin-top: auto; }
 
-/* ===== BOTÃO FLUTUANTE DE INFORMAÇÃO (NOVO) ===== */
-.info-btn {
+/* ===== BOTÃO VER DETALHES (SUBSTITUI O ÍCONE "I") ===== */
+.view-details-btn {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 32px;
-  height: 32px;
-  background-color: rgba(255, 255, 255, 0.9);
-  border-radius: 50%;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(21, 128, 61, 0.95);
+  color: white;
+  text-align: center;
+  padding: 8px 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+  z-index: 20;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-  color: #15803d;
-  z-index: 20;
-  border: 1px solid #e5e7eb;
-  transition: all 0.2s ease;
+  gap: 6px;
   cursor: pointer;
 }
-.info-btn:hover {
-  background-color: #15803d;
-  color: white;
-  transform: scale(1.1);
-  border-color: #15803d;
+
+.view-details-btn ion-icon { font-size: 1.1rem; }
+
+/* Exibe o botão ao passar o mouse NO CARD */
+.product-card:hover .view-details-btn {
+  transform: translateY(0);
 }
 
-/* ===== TAGS DO MODAL (NOVO) ===== */
+/* No mobile, o botão pode ser exibido sempre ou ao toque na imagem (JS controla click) */
+@media (max-width: 640px) {
+    .view-details-btn {
+        /* Opcional: Para mobile, você pode deixar sempre visível ou manter hidden e só aparecer no toque */
+        /* background: rgba(21, 128, 61, 0.9); */
+    }
+}
+
+/* ===== TAGS DO MODAL ===== */
 .product-tag {
   display: inline-flex;
   align-items: center;
@@ -271,122 +331,114 @@ html { scroll-behavior: smooth; }
 }
 
 /* Cores das Tags */
-.tag-gluten { background-color: #ffedd5; color: #9a3412; border: 1px solid #fed7aa; } /* Laranja */
-.tag-vegan { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; } /* Verde */
-.tag-lactose { background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; } /* Amarelo/Laranja */
-.tag-default { background-color: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; } /* Cinza (padrão) */
-.tag-sugar { background-color: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; } /* Azul */
-.tag-preservative { background-color: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; } /* Cinza */
+.tag-gluten { background-color: #ffedd5; color: #9a3412; border: 1px solid #fed7aa; } 
+.tag-vegan { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; } 
+.tag-lactose { background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; } 
+.tag-default { background-color: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; } 
+.tag-sugar { background-color: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; } 
+.tag-preservative { background-color: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; } 
 
 
-/* ===== BADGES DE DIETA NO CARD (NOVO) ===== */
+/* ===== BADGES DE DIETA NO CARD (ESTILO PILL - MELHORADO) ===== */
 .diet-badges {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin: 6px 0 10px;
+  gap: 4px;
+  margin: 4px 0 8px;
 }
 
-.diet-badge {
-  width: 28px;
-  height: 28px;
-  border-radius: 9999px;
+/* Pill Style: Texto + Icone (Clareza para o cliente) */
+.diet-pill {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
   border: 1px solid rgba(0,0,0,0.06);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.10);
+  gap: 4px;
+  white-space: nowrap;
+  max-width: 100%;
 }
 
-.diet-badge ion-icon {
-  font-size: 16px;
+.diet-pill ion-icon {
+  font-size: 13px;
 }
 
-.diet-badge-gluten { background-color: #ffedd5; color: #9a3412; border-color: #fed7aa; } /* Laranja */
-.diet-badge-vegan { background-color: #dcfce7; color: #166534; border-color: #bbf7d0; } /* Verde */
-.diet-badge-sugar { background-color: #dbeafe; color: #1e40af; border-color: #bfdbfe; } /* Azul */
-.diet-badge-lactose { background-color: #fef3c7; color: #92400e; border-color: #fde68a; } /* Amarelo/Laranja */
-.diet-badge-preservative { background-color: #f3f4f6; color: #374151; border-color: #e5e7eb; } /* Cinza */
-
-/* ===== OVERLAY "VER DETALHES" NA IMAGEM (NOVO) ===== */
-.view-details-overlay {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 8px;
-  display: flex;
-  justify-content: center;
-  pointer-events: none; /* clique passa para a imagem */
-  z-index: 15;
+.diet-pill-text {
+  display: inline-block;
 }
 
-.view-details-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border-radius: 9999px;
-  background: rgba(0, 0, 0, 0.55);
-  color: #fff;
-  font-size: 0.72rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  box-shadow: 0 6px 14px rgba(0,0,0,0.25);
-  backdrop-filter: blur(6px);
-}
+/* Cores específicas para as Pills */
+.diet-pill-gluten { background-color: #ffedd5; color: #9a3412; border-color: #fed7aa; }
+.diet-pill-vegan { background-color: #dcfce7; color: #166534; border-color: #bbf7d0; }
+.diet-pill-sugar { background-color: #dbeafe; color: #1e40af; border-color: #bfdbfe; }
+.diet-pill-lactose { background-color: #fef3c7; color: #92400e; border-color: #fde68a; }
+.diet-pill-preservative { background-color: #f3f4f6; color: #374151; border-color: #e5e7eb; }
 
-.view-details-chip ion-icon { font-size: 14px; }
-
-.product-card:hover .view-details-chip {
-  background: rgba(21, 128, 61, 0.92);
-}
-
-/* ===== MODAL DETALHES: IMAGEM COMPACTA (NOVO) ===== */
+/* ===== MODAL DETALHES OTIMIZADO ===== */
 #product-details-modal .product-details-image {
-  max-height: 220px !important;
-  max-width: 220px !important;
+  max-height: 250px !important;
+  max-width: 250px !important;
   width: auto !important;
   height: auto !important;
 }
 
-@media (max-width: 768px) {
-  /* Layout lado a lado para priorizar texto */
+/* MOBILE: LAYOUT THUMBNAIL PARA MODAL */
+@media (max-width: 640px) {
+  /* Layout vira bloco para fluidez */
   #product-details-modal .product-details-layout {
-    flex-direction: row !important;
+    flex-direction: column !important; 
+    display: block !important;
   }
 
+  /* Container da imagem vira pequeno e flutua à esquerda */
   #product-details-modal .product-details-image-col {
-    width: 112px !important;
-    flex: 0 0 112px !important;
-    padding: 14px !important;
+    width: 80px !important;
+    height: 80px !important;
+    padding: 0 !important;
     min-height: auto !important;
-  }
-
-  #product-details-modal .product-details-info-col {
-    padding: 1rem !important;
+    float: left;
+    margin-right: 12px;
+    margin-bottom: 8px;
+    background: transparent !important;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   #product-details-modal .product-details-image {
-    max-height: 96px !important;
-    max-width: 96px !important;
+    max-height: 70px !important;
+    max-width: 70px !important;
   }
 
-  /* Badge mais discreto no mobile */
-  #detail-out-of-stock-badge {
-    top: 10px !important;
-    left: 10px !important;
-    font-size: 0.65rem !important;
-    padding: 3px 8px !important;
+  /* Ajuste do conteúdo */
+  #product-details-modal .product-details-info-col {
+    padding: 1rem !important;
+    display: block !important;
+  }
+
+  /* Garante que o header (título) fique alinhado ao lado da imagem */
+  #product-details-modal .product-details-info-col > div:first-child {
+    min-height: 80px; 
+  }
+
+  #detail-name {
+    font-size: 1.15rem !important;
+    margin-top: 0 !important;
+    line-height: 1.2;
   }
 }
 
 /* Ajustes finos no mobile */
 @media (max-width: 640px) {
-  .diet-badge { width: 26px; height: 26px; }
-  .diet-badge ion-icon { font-size: 15px; }
-  .view-details-chip { font-size: 0.68rem; padding: 6px 9px; }
+  /* Ajuste das pills no mobile para caberem melhor */
+  .diet-pill {
+    padding: 2px 6px;
+    font-size: 0.65rem;
+  }
 }
 
 /* ===== ESTILOS PARA PRODUTOS FORA DE ESTOQUE E ESTOQUE BAIXO ===== */
@@ -537,7 +589,8 @@ html { scroll-behavior: smooth; }
 @media (max-width: 640px) {
   .cart-panel { max-width: 100%; }
   .product-card { margin-bottom: 1rem; min-height: 400px; }
-  .product-image-container, .product-image, .product-image-error { height: 180px !important; min-height: 180px !important; max-height: 180px !important; }
+  /* Reduzido altura da imagem na vitrine mobile tambem */
+  .product-image-container, .product-image, .product-image-error { height: 140px !important; min-height: 140px !important; max-height: 140px !important; }
   .product-card-content { min-height: 200px; }
   .product-card h3 { font-size: 1rem; line-height: 1.2; }
   .product-card .text-lg { font-size: 1rem; }
@@ -553,8 +606,9 @@ html { scroll-behavior: smooth; }
 }
 
 @media (min-width: 1024px) {
-  .product-image-container, .product-image, .product-image-error { height: 240px !important; min-height: 240px !important; max-height: 240px !important; }
-  .product-card { min-height: 470px; }
+  /* No desktop um pouco maior, mas mantendo compacto (160px) */
+  .product-image-container, .product-image, .product-image-error { height: 160px !important; min-height: 160px !important; max-height: 160px !important; }
+  .product-card { min-height: 400px; }
 }
 
 /* ===== Notificações, Modais e Otimizações Finais ===== */
