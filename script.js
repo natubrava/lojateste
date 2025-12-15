@@ -247,24 +247,24 @@ function parseCSV(csvText) {
   }).filter(item => item.SKU && item.NOME_SITE);
 }
 
-// ===== FUNÇÃO PARA DETERMINAR STATUS DO PRODUTO (CORRIGIDA) =====
+// ===== FUNÇÃO PARA DETERMINAR STATUS DO PRODUTO =====
 function getProductStatus(product) {
   if (!product.isGranel) {
-    // Produto unitário - permite compra com qualquer quantidade > 0
+    // Produto unitário
     if (product.stock <= 0) return 'out_of_stock';
-    if (product.stock === 1) return 'low_stock'; // Última unidade
+    if (product.stock === 1) return 'low_stock';
     return 'available';
   } else {
     // Produto a granel
     const stockInGrams = product.stock * 1000;
     if (stockInGrams <= 0) return 'out_of_stock';
-    if (stockInGrams < CONFIG.MIN_GRANEL_QUANTITY) return 'out_of_stock'; // Não permite venda abaixo de 50g
-    if (stockInGrams < CONFIG.LOW_STOCK_THRESHOLD) return 'low_stock'; // Entre 50-99g = estoque baixo
+    if (stockInGrams < CONFIG.MIN_GRANEL_QUANTITY) return 'out_of_stock';
+    if (stockInGrams < CONFIG.LOW_STOCK_THRESHOLD) return 'low_stock';
     return 'available';
   }
 }
 
-// ===== HELPER PARA RENDERIZAR TAGS COLORIDAS (MODAL) =====
+// ===== HELPER PARA RENDERIZAR TAGS =====
 function renderTags(tagsString) {
   if (!tagsString) return '';
 
@@ -290,7 +290,7 @@ function renderTags(tagsString) {
   }).join('');
 }
 
-// ===== BADGES DE DIETA (CARDS) - VERSÃO MELHORADA (PILLS) =====
+// ===== BADGES DE DIETA (CARDS) =====
 function getDietBadges(tagsString) {
   if (!tagsString) return [];
   const t = normalizeText(tagsString);
@@ -300,9 +300,8 @@ function getDietBadges(tagsString) {
     if (!badges.some(b => b.key === key)) badges.push({ key, label, icon, cssClass });
   };
 
-  // Usando badges estilo "Pill" (Texto + Icone) para clareza
   if (t.includes('sem gluten') || t.includes('gluten free')) {
-    add('gluten', 'Sem Glúten', 'ban-outline', 'diet-pill-gluten');
+    add('gluten', 'S/ Glúten', 'ban-outline', 'diet-pill-gluten');
   }
   if (t.includes('vegano') || t.includes('vegana') || t.includes('vegan')) {
     add('vegan', 'Vegano', 'leaf-outline', 'diet-pill-vegan');
@@ -311,10 +310,10 @@ function getDietBadges(tagsString) {
     add('sugar', 'Zero Açúcar', 'cube-outline', 'diet-pill-sugar');
   }
   if (t.includes('sem lactose') || t.includes('sem leite') || t.includes('lactose free')) {
-    add('lactose', 'Sem Lactose', 'water-outline', 'diet-pill-lactose');
+    add('lactose', 'S/ Lactose', 'water-outline', 'diet-pill-lactose');
   }
   if (t.includes('sem conservante')) {
-    add('preservative', 'Sem Conservantes', 'shield-checkmark-outline', 'diet-pill-preservative');
+    add('preservative', 'S/ Conser.', 'shield-checkmark-outline', 'diet-pill-preservative');
   }
 
   return badges;
@@ -324,7 +323,6 @@ function renderDietBadges(tagsString) {
   const badges = getDietBadges(tagsString);
   if (badges.length === 0) return '';
 
-  // Renderiza como Pills (Texto explícito)
   return `
     <div class="diet-badges">
       ${badges.map(b => `
@@ -338,7 +336,7 @@ function renderDietBadges(tagsString) {
 }
 
 
-// ===== LAZY LOADING DE IMAGENS =====
+// ===== LAZY LOADING =====
 function setupLazyLoading() {
   const imageObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
@@ -363,7 +361,7 @@ function setupLazyLoading() {
   });
 }
 
-// ===== CARREGAMENTO INICIAL DO CARRINHO =====
+// ===== CARREGAMENTO CARRINHO =====
 function loadInitialCart() {
   try {
     const savedCart = loadCartFromLocalStorage();
@@ -376,7 +374,7 @@ function loadInitialCart() {
   }
 }
 
-// ===== VALIDAÇÃO DO CARRINHO =====
+// ===== VALIDAÇÃO CARRINHO =====
 function validateCartWithProducts() {
   if (cart.length === 0) return;
   
@@ -398,7 +396,6 @@ function validateCartWithProducts() {
       continue;
     }
     
-    // Verificar se produto está disponível
     const status = getProductStatus(currentProduct);
     if (status === 'out_of_stock') {
       hasChanges = true;
@@ -430,12 +427,12 @@ function validateCartWithProducts() {
   renderCart();
   
   if (removedItems.length > 0) {
-    showNotification(`Removido(s) do carrinho: ${removedItems.join(', ')} (indisponível)`, 5000);
+    showNotification(`Removido(s): ${removedItems.join(', ')} (indisponível)`, 5000);
   }
   
   if (adjustedItems.length > 0) {
     adjustedItems.forEach(item => {
-      showNotification(`${item.name}: quantidade ajustada para ${item.newQty}${item.unit} (estoque limitado)`, 4000);
+      showNotification(`${item.name}: ajustado para ${item.newQty}${item.unit}`, 4000);
     });
   }
   
@@ -444,7 +441,7 @@ function validateCartWithProducts() {
   }
 }
 
-// ===== CARREGAMENTO OTIMIZADO DE PRODUTOS =====
+// ===== CARREGAMENTO DE PRODUTOS =====
 async function loadProducts() {
   if (isLoading) return;
   isLoading = true;
@@ -549,7 +546,6 @@ async function loadProductsFromSheet(isBackground = false) {
         isGranel: isGranel,
         minQuantity: isGranel ? CONFIG.MIN_GRANEL_QUANTITY : 1,
         quantityStep: isGranel ? CONFIG.MIN_GRANEL_QUANTITY : 1,
-        // NOVOS CAMPOS: Leitura das colunas INGREDIENTES e TAGS
         ingredients: item.INGREDIENTES || '',
         tags: item.TAGS || ''
       };
@@ -585,17 +581,15 @@ async function loadProductsFromSheet(isBackground = false) {
   }
 }
 
-// ===== RENDERIZAÇÃO DE CATEGORIAS (CORRIGIDA - SEM "FORA DE ESTOQUE") =====
+// ===== RENDERIZAÇÃO DE CATEGORIAS =====
 function renderCategoryFilters() {
   const clubProducts = products.filter(p => p.clubPrice !== null && p.clubPrice > 0);
   
-  // Contar produtos por categoria
   const categoryCount = {};
   products.forEach(p => {
     categoryCount[p.category] = (categoryCount[p.category] || 0) + 1;
   });
   
-  // ADICIONADO: Produtos específicos na categoria SUPLEMENTOS
   const specificSupplementsProducts = products.filter(p => p.sku === '2' || p.sku === '409' || p.sku === '340');
   if (specificSupplementsProducts.length > 0) {
     categoryCount['SUPLEMENTOS'] = (categoryCount['SUPLEMENTOS'] || 0) + specificSupplementsProducts.length;
@@ -619,7 +613,6 @@ function renderCategoryFilters() {
     }
   });
   
-  // Separar categorias especiais
   const regularCategories = displayCategories.filter(cat => cat !== 'GELADEIRA');
   const hasGeladeira = displayCategories.includes('GELADEIRA');
   
@@ -628,7 +621,6 @@ function renderCategoryFilters() {
     count: products.length
   }];
   
-  // Adicionar categorias regulares primeiro
   regularCategories.forEach(cat => {
     if (cat === 'VIAAROMA') {
       categories.push({ 
@@ -643,7 +635,6 @@ function renderCategoryFilters() {
     }
   });
   
-  // Adicionar GELADEIRA como penúltima (se existir)
   if (hasGeladeira) {
     categories.push({ 
       name: 'GELADEIRA', 
@@ -651,7 +642,6 @@ function renderCategoryFilters() {
     });
   }
   
-  // Adicionar Club NatuBrava como última categoria (se existir)
   if (clubProducts.length > 0) {
     categories.push({ 
       name: '⭐ Club NatuBrava', 
@@ -674,19 +664,17 @@ function renderCategoryFilters() {
   }).join('');
 }
 
-// ===== APLICAR FILTROS E BUSCA (CORRIGIDO PARA SUPLEMENTOS) =====
+// ===== APLICAR FILTROS =====
 function applyFilters() {
   const searchTerm = normalizeText(elements.searchBox.value);
   const searchTerms = searchTerm.split(' ').filter(t => t.length > 0);
   
   filteredProducts = products.filter(product => {
-    // Se há busca, ignorar filtro de categoria e buscar globalmente
     if (searchTerms.length > 0) {
       const productText = normalizeText(`${product.name} ${product.sku}`);
       return searchTerms.every(term => productText.includes(term));
     }
     
-    // Se não há busca, aplicar filtro de categoria
     if (currentFilter === 'Todos') {
       return true;
     } else if (currentFilter === '⭐ Club NatuBrava') {
@@ -694,14 +682,12 @@ function applyFilters() {
     } else if (currentFilter === 'VIAAROMA') {
       return product.category === 'OLEO ESSENCIAL' || product.category === 'ESSENCIAS';
     } else if (currentFilter === 'SUPLEMENTOS') {
-      // ADICIONADO: Incluir produtos específicos na categoria SUPLEMENTOS
       return product.category === 'SUPLEMENTOS' || product.sku === '2' || product.sku === '409' || product.sku === '340';
     } else {
       return product.category === currentFilter;
     }
   });
   
-  // Ordenar produtos
   filteredProducts.sort((a, b) => {
     const statusOrder = { 'available': 0, 'low_stock': 1, 'out_of_stock': 2 };
     if (a.status !== b.status) {
@@ -744,10 +730,10 @@ function renderProducts() {
     const hasClubPrice = product.clubPrice !== null && product.clubPrice > 0;
     const status = product.status;
     
-    // Verificação para botão "Ver Detalhes"
+    // Verificação para botão "Ver Detalhes" (Ingredientes ou Tags)
     const hasDetails = (product.ingredients && product.ingredients.length > 2) || (product.tags && product.tags.length > 0);
     
-    let cardClass = 'product-card bg-white rounded-lg shadow-md overflow-hidden';
+    let cardClass = 'product-card bg-white rounded-lg overflow-hidden';
     if (status === 'out_of_stock') {
       cardClass += ' out-of-stock-card';
     } else if (status === 'low_stock') {
@@ -758,7 +744,6 @@ function renderProducts() {
     }
     
     card.className = cardClass;
-    card.style.animation = 'fadeInUp 0.5s ease-out';
     card.dataset.id = product.id;
     
     let priceHTML = '';
@@ -768,37 +753,37 @@ function renderProducts() {
     
     // Badge de status
     if (status === 'out_of_stock') {
-      statusBadgeHTML = '<div class="status-badge out-of-stock-badge">Produto Indisponível</div>';
+      statusBadgeHTML = '<div class="status-badge out-of-stock-badge">Esgotado</div>';
     } else if (status === 'low_stock') {
-      statusBadgeHTML = '<div class="status-badge low-stock-badge">Últimas Unidades</div>';
+      statusBadgeHTML = '<div class="status-badge low-stock-badge">Últimas Unid.</div>';
     }
     
-    // Preços
+    // Preços (Correção do Layout Club NatuBrava)
     if (hasClubPrice && status !== 'out_of_stock') {
       const normalPrice = isGranel ? product.price * 100 : product.price;
       const clubPriceDisplay = isGranel ? product.clubPrice * 100 : product.clubPrice;
       priceHTML = `
         <div class="price-container">
-          <div class="normal-price">De: <span class="original-price">R$ ${formatPrice(normalPrice)}${isGranel ? '/100g' : ''}</span></div>
+          <div class="normal-price">De: <span class="original-price">R$ ${formatPrice(normalPrice)}</span></div>
           <div class="club-price-container">
-            <span class="club-badge">CLUB</span>
-            <span class="club-price">R$ ${formatPrice(clubPriceDisplay)}${isGranel ? '/100g' : ''}</span>
-            <button class="club-info-icon ml-1 text-green-600 hover:text-green-800" onclick="openClubInfoModal(event)" title="Saiba mais sobre o Club NatuBrava">
-              <ion-icon name="information-circle-outline" class="text-sm"></ion-icon>
-            </button>
+             <span class="club-price">R$ ${formatPrice(clubPriceDisplay)}</span>
+             <span class="club-badge">CLUB</span>
           </div>
         </div>`;
     } else {
-      priceHTML = `<span class="text-lg font-bold text-green-700">R$ ${formatPrice(isGranel ? product.price * 100 : product.price)}${isGranel ? '/100g' : ''}</span>`;
+      priceHTML = `
+        <div class="price-container">
+           <span class="text-lg font-bold text-green-700">R$ ${formatPrice(isGranel ? product.price * 100 : product.price)}</span>
+        </div>`;
     }
     
     // Controles de quantidade e botão
     if (status === 'out_of_stock') {
       quantityControlsHTML = '';
       buttonHTML = `
-        <button class="notify-me-btn w-full bg-blue-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-blue-700 flex items-center justify-center space-x-1" data-product-id="${product.id}">
+        <button class="notify-me-btn w-full text-white font-medium rounded-lg flex items-center justify-center space-x-1" data-product-id="${product.id}">
           <ion-icon name="notifications-outline" class="text-base"></ion-icon>
-          <span>Avise-me assim que chegar</span>
+          <span>Avise-me</span>
         </button>`;
     } else {
       const minQty = isGranel ? CONFIG.MIN_GRANEL_QUANTITY : 1;
@@ -807,7 +792,7 @@ function renderProducts() {
       quantityControlsHTML = `
         <div class="flex items-center space-x-1">
           <button class="product-quantity-change p-1 rounded-full bg-gray-100 hover:bg-gray-200" data-change="-1" ${initialQty <= minQty ? 'disabled' : ''}><ion-icon name="remove-outline" class="pointer-events-none"></ion-icon></button>
-          <span class="product-quantity font-medium text-base ${isGranel ? 'w-16' : 'w-6'} text-center">${isGranel ? `${initialQty}g` : initialQty}</span>
+          <span class="product-quantity font-medium text-base ${isGranel ? 'w-14' : 'w-6'} text-center">${isGranel ? `${initialQty}g` : initialQty}</span>
           <button class="product-quantity-change p-1 rounded-full bg-gray-100 hover:bg-gray-200" data-change="1" ${initialQty >= maxQty ? 'disabled' : ''}><ion-icon name="add-outline" class="pointer-events-none"></ion-icon></button>
         </div>`;
       
@@ -818,13 +803,20 @@ function renderProducts() {
         </button>`;
     }
     
-    // Destacar termos de busca no nome
+    // Busca
     let displayName = product.name;
     const searchTerm = elements.searchBox.value.trim();
     if (searchTerm) {
       const regex = new RegExp(`(${searchTerm.split(' ').join('|')})`, 'gi');
       displayName = displayName.replace(regex, '<mark class="bg-yellow-200">$1</mark>');
     }
+    
+    // Botão "Ver Detalhes" Fixo (Novo Design Pill)
+    const detailsButtonHTML = hasDetails ? `
+        <div class="view-details-pill info-btn-trigger">
+          <ion-icon name="eye-outline"></ion-icon> Ver Detalhes
+        </div>
+    ` : '';
     
     const imageHTML = `
       <img data-src="${product.image}" 
@@ -834,15 +826,6 @@ function renderProducts() {
            onerror="this.parentElement.innerHTML='<div class=\\'product-image-error\\'>Imagem<br>Indisponível</div>'">
     `;
     
-    // Lógica CONDICIONAL para "Ver Detalhes"
-    // Removemos a div "view-details-overlay" antiga e o botão "info-btn" (i)
-    // Adicionamos um botão explícito apenas se tiver detalhes
-    const detailsButtonHTML = hasDetails ? `
-        <button class="view-details-btn info-btn-trigger">
-          <ion-icon name="eye-outline"></ion-icon> Ver Detalhes
-        </button>
-    ` : '';
-    
     card.innerHTML = `
       <div class="product-image-container ${hasDetails ? 'has-details-cursor' : ''}">
         ${imageHTML}
@@ -850,15 +833,15 @@ function renderProducts() {
         ${detailsButtonHTML}
       </div>
       <div class="product-card-content">
-        <h3 class="text-lg font-semibold text-green-800 mb-1 leading-tight">${displayName}</h3>
+        <h3 class="text-sm font-semibold text-green-800 mb-1 leading-tight h-auto">${displayName}</h3>
         ${renderDietBadges(product.tags)}
         <p class="text-xs text-gray-400 mb-2 flex-grow">Cód.: ${product.sku}</p>
         <div class="product-card-footer">
-          <div class="flex justify-between items-center mb-3">
+          <div class="flex justify-between items-end mb-2">
             ${priceHTML}
             ${quantityControlsHTML}
           </div>
-          ${isGranel && status !== 'out_of_stock' ? `<div class="text-center mb-2"><span class="text-sm font-semibold text-green-800">Total: R$ <span class="product-total-price">${formatPrice((hasClubPrice ? product.clubPrice : product.price) * initialQty)}</span></span></div>` : ''}
+          ${isGranel && status !== 'out_of_stock' ? `<div class="text-center mb-2"><span class="text-xs font-semibold text-green-800">Total: R$ <span class="product-total-price">${formatPrice((hasClubPrice ? product.clubPrice : product.price) * initialQty)}</span></span></div>` : ''}
           ${buttonHTML}
         </div>
       </div>`;
@@ -988,18 +971,16 @@ function triggerCartAnimation() {
   }
 }
 
-// ===== ADICIONAR AO CARRINHO (CORRIGIDO) =====
+// ===== ADICIONAR AO CARRINHO =====
 function addToCart(productId, quantity) {
   const product = products.find(p => p.id === productId);
   if (!product) return;
 
-  // Verificar se produto está disponível
   if (product.status === 'out_of_stock') {
     showNotification('Este produto não está disponível para compra no momento.');
     return;
   }
 
-  // Verificação de quantidade mínima
   if (product.isGranel && quantity < CONFIG.MIN_GRANEL_QUANTITY) {
     showNotification(`Quantidade mínima para produtos a granel: ${CONFIG.MIN_GRANEL_QUANTITY}g`);
     return;
@@ -1158,14 +1139,12 @@ function openProductDetails(productId) {
   const product = products.find(p => p.id === productId);
   if (!product) return;
 
-  // Preencher dados básicos
   elements.detailImage.src = product.image;
   elements.detailImage.onerror = () => { elements.detailImage.src = 'https://placehold.co/400x400/166534/ffffff?text=Sem+Imagem'; };
   elements.detailCategory.textContent = product.category;
   elements.detailName.textContent = product.name;
   elements.detailSku.textContent = product.sku;
 
-  // Lógica de Preço
   const isGranel = product.isGranel;
   const hasClubPrice = product.clubPrice !== null && product.clubPrice > 0;
   
@@ -1178,22 +1157,20 @@ function openProductDetails(productId) {
       <div class="flex flex-col">
         <span class="text-sm text-gray-500 line-through">De R$ ${formatPrice(normalPrice)}${isGranel ? '/100g' : ''}</span>
         <div class="flex items-center gap-2">
-          <span class="text-3xl font-bold text-green-700">R$ ${formatPrice(clubPriceDisplay)}${isGranel ? '/100g' : ''}</span>
+          <span class="text-2xl md:text-3xl font-bold text-green-700">R$ ${formatPrice(clubPriceDisplay)}${isGranel ? '/100g' : ''}</span>
           <span class="bg-green-600 text-white text-xs px-2 py-1 rounded font-bold uppercase">Club</span>
         </div>
       </div>
     `;
   } else {
     priceHTML = `
-      <span class="text-3xl font-bold text-green-700">R$ ${formatPrice(isGranel ? product.price * 100 : product.price)}${isGranel ? '/100g' : ''}</span>
+      <span class="text-2xl md:text-3xl font-bold text-green-700">R$ ${formatPrice(isGranel ? product.price * 100 : product.price)}${isGranel ? '/100g' : ''}</span>
     `;
   }
   elements.detailPriceContainer.innerHTML = priceHTML;
 
-  // Tags
   elements.detailTagsContainer.innerHTML = renderTags(product.tags);
 
-  // Ingredientes (se vazio, esconde a seção)
   if (product.ingredients && product.ingredients.trim() !== '') {
     elements.detailIngredients.textContent = product.ingredients;
     elements.detailIngredientsContainer.classList.remove('hidden');
@@ -1201,7 +1178,6 @@ function openProductDetails(productId) {
     elements.detailIngredientsContainer.classList.add('hidden');
   }
   
-  // Ações e Estoque
   const actionsSection = elements.detailActionsSection || document.getElementById('detail-actions-section');
 
   if (product.status === 'out_of_stock') {
@@ -1216,12 +1192,10 @@ function openProductDetails(productId) {
     }
   } else {
     elements.detailOutOfStockBadge.classList.add('hidden');
-    // REMOVIDO BOTÃO DE ADICIONAR AO CARRINHO DO MODAL - MODAL AGORA É APENAS INFORMATIVO
     if (actionsSection) actionsSection.classList.add('hidden');
     elements.detailActions.innerHTML = '';
   }
 
-  // Abrir Modal
   elements.productDetailsModalOverlay.classList.add('open');
   elements.productDetailsModalOverlay.style.display = 'flex';
   document.body.style.overflow = 'hidden';
@@ -1241,16 +1215,8 @@ function closeDetailsModal() {
   }, 300);
 }
 
-// Funções Auxiliares do Modal de Detalhes (Escopo Global para acesso via HTML string)
-window.changeModalQuantity = function(direction, isGranel, step, maxQty) {
-    // Funcionalidade mantida caso seja reativada no futuro, mas oculta agora
-};
-
-window.addToCartFromModal = function(productId, isGranel) {
-   // Funcionalidade mantida caso seja reativada no futuro
-};
-
-// ... (Resto das funções de modal existentes: Notify, Delivery, ClubInfo) ...
+window.changeModalQuantity = function(direction, isGranel, step, maxQty) {};
+window.addToCartFromModal = function(productId, isGranel) {};
 
 function openNotifyModal(productId) {
   const product = products.find(p => p.id === productId);
@@ -1449,7 +1415,6 @@ function setupEventListeners() {
   
   window.addEventListener('scroll', handleScroll);
   
-  // Listeners para Modais existentes
   if (elements.deliveryInfoButton) elements.deliveryInfoButton.addEventListener('click', (e) => { e.preventDefault(); openDeliveryModal(); });
   if (elements.closeDeliveryModalButton) elements.closeDeliveryModalButton.addEventListener('click', closeDeliveryModal);
   if (elements.okDeliveryModalButton) elements.okDeliveryModalButton.addEventListener('click', closeDeliveryModal);
@@ -1472,7 +1437,6 @@ function setupEventListeners() {
   if (elements.cancelNotifyButton) elements.cancelNotifyButton.addEventListener('click', closeNotifyModal);
   if (elements.confirmNotifyButton) elements.confirmNotifyButton.addEventListener('click', sendNotifyRequest);
   
-  // Listeners para Modal de Detalhes
   if (elements.closeDetailsModalButton) elements.closeDetailsModalButton.addEventListener('click', closeDetailsModal);
   if (elements.productDetailsModalOverlay) elements.productDetailsModalOverlay.addEventListener('click', (e) => { if (e.target === elements.productDetailsModalOverlay) closeDetailsModal(); });
 
@@ -1484,16 +1448,15 @@ function setupEventListeners() {
     }
   });
 
-  // ===== EVENT LISTENER PARA PRODUTOS (CORRIGIDO) =====
+  // ===== EVENT LISTENER PARA PRODUTOS =====
   elements.productList.addEventListener('click', e => {
-    // Verificar se clicou no botão "Avise-me"
     if (e.target.closest('.notify-me-btn')) {
       e.preventDefault();
       e.stopPropagation();
-      const card = e.target.closest('.product-card') || e.target.closest('.notify-me-btn'); // Fallback
-      if (card && card.dataset.productId) { // Caso seja botão isolado
+      const card = e.target.closest('.product-card') || e.target.closest('.notify-me-btn');
+      if (card && card.dataset.productId) {
           openNotifyModal(parseInt(card.dataset.productId));
-      } else if (card && card.dataset.id) { // Caso dentro do card
+      } else if (card && card.dataset.id) {
           openNotifyModal(parseInt(card.dataset.id));
       }
       return;
@@ -1506,7 +1469,7 @@ function setupEventListeners() {
     const product = products.find(p => p.id === productId);
     if (!product) return;
     
-    // Abrir Modal de Detalhes ao clicar no botão "Ver Detalhes" OU na imagem (se tiver detalhes)
+    // Abertura do Modal de Detalhes
     if (e.target.closest('.info-btn-trigger') || (e.target.closest('.product-image-container') && card.querySelector('.product-image-container').classList.contains('has-details-cursor'))) {
       if (!e.target.classList.contains('status-badge')) {
         e.preventDefault();
@@ -1548,7 +1511,6 @@ function setupEventListeners() {
       const change = parseInt(changeBtn.dataset.change);
       let currentQty = parseInt(qtySpan.textContent.replace('g', ''));
       
-      // Calcular nova quantidade
       let newQty;
       if (isGranel) {
         newQty = currentQty + (change * CONFIG.MIN_GRANEL_QUANTITY);
@@ -1556,15 +1518,12 @@ function setupEventListeners() {
         newQty = currentQty + change;
       }
       
-      // Definir limites
       const minQty = isGranel ? CONFIG.MIN_GRANEL_QUANTITY : 1;
       const maxQty = isGranel ? product.stock * 1000 : product.stock;
 
-      // Verificar se a nova quantidade está dentro dos limites
       if (newQty >= minQty && newQty <= maxQty) {
         qtySpan.textContent = isGranel ? `${newQty}g` : newQty;
         
-        // Atualizar total para produtos a granel
         if (isGranel) {
           const priceToUse = hasClubPrice ? product.clubPrice : product.price;
           const totalPriceSpan = card.querySelector('.product-total-price');
@@ -1573,7 +1532,6 @@ function setupEventListeners() {
           }
         }
         
-        // Atualizar estado dos botões
         const decreaseBtn = card.querySelector('[data-change="-1"]');
         const increaseBtn = card.querySelector('[data-change="1"]');
         
@@ -1584,7 +1542,6 @@ function setupEventListeners() {
           increaseBtn.disabled = newQty >= maxQty;
         }
       } else {
-        // Quantidade fora dos limites - mostrar notificação
         if (newQty < minQty) {
           showNotification(`Quantidade mínima: ${minQty}${isGranel ? 'g' : ''}`);
         } else if (newQty > maxQty) {
@@ -1655,17 +1612,15 @@ function setupEventListeners() {
       closeDeliveryModal();
       closeClubInfoModal();
       closeNotifyModal();
-      closeDetailsModal(); // Adicionado
+      closeDetailsModal();
       closeMobileMenu();
     }
   });
 }
 
-// ===== FUNÇÃO GLOBAL PARA MODAL DO CLUB =====
 window.openClubInfoModal = openClubInfoModal;
-window.closeDetailsModal = closeDetailsModal; // Exposto para onclick inline
+window.closeDetailsModal = closeDetailsModal;
 
-// ===== INICIALIZAÇÃO =====
 document.addEventListener('DOMContentLoaded', () => {
   elements.currentYear.textContent = new Date().getFullYear();
   setupEventListeners();
