@@ -228,7 +228,6 @@ html { scroll-behavior: smooth; }
   display: flex; 
   flex-direction: column; 
   height: 100%; 
-  /* Altura mínima reduzida para evitar cards gigantes */
   min-height: 340px; 
   border: 1px solid #f0f0f0;
 }
@@ -306,7 +305,7 @@ html { scroll-behavior: smooth; }
   gap: 4px;
   border: 1px solid #dcfce7;
   transition: all 0.2s ease;
-  pointer-events: auto; /* Garante clique */
+  pointer-events: auto;
 }
 
 .view-details-pill:hover {
@@ -320,7 +319,23 @@ html { scroll-behavior: smooth; }
   font-size: 0.9rem;
 }
 
-/* ===== TAGS DO MODAL ===== */
+/* ===== TAGS DO MODAL (NOVA VERSÃO COM ÍCONES) ===== */
+.modal-tag-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  gap: 6px;
+  border: 1px solid transparent;
+  margin-bottom: 4px; /* Garante espaço na quebra */
+  white-space: nowrap; /* Evita quebra dentro da tag */
+}
+
+.modal-tag-pill ion-icon { font-size: 1.1rem; }
+
+/* TAGS LEGADO (MANTIDO P/ COMPATIBILIDADE SE NECESSÁRIO) */
 .product-tag {
   display: inline-flex;
   align-items: center;
@@ -333,12 +348,13 @@ html { scroll-behavior: smooth; }
   white-space: nowrap;
 }
 
-.tag-gluten { background-color: #ffedd5; color: #9a3412; border: 1px solid #fed7aa; } 
-.tag-vegan { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; } 
-.tag-lactose { background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; } 
-.tag-default { background-color: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; } 
-.tag-sugar { background-color: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; } 
-.tag-preservative { background-color: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; } 
+/* Cores das Tags/Badges */
+.tag-gluten, .diet-pill-gluten { background-color: #ffedd5; color: #9a3412; border: 1px solid #fed7aa; border-color: #fed7aa; } 
+.tag-vegan, .diet-pill-vegan { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; border-color: #bbf7d0; } 
+.tag-lactose, .diet-pill-lactose { background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; border-color: #fde68a; } 
+.tag-default, .diet-pill-default { background-color: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; border-color: #e5e7eb; } 
+.tag-sugar, .diet-pill-sugar { background-color: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; border-color: #bfdbfe; } 
+.tag-preservative, .diet-pill-preservative { background-color: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; border-color: #e5e7eb; } 
 
 
 /* ===== BADGES DE DIETA NO CARD (Compactas) ===== */
@@ -363,74 +379,82 @@ html { scroll-behavior: smooth; }
 
 .diet-pill ion-icon { font-size: 11px; }
 
-/* Cores das Pills */
-.diet-pill-gluten { background-color: #ffedd5; color: #9a3412; border-color: #fed7aa; }
-.diet-pill-vegan { background-color: #dcfce7; color: #166534; border-color: #bbf7d0; }
-.diet-pill-sugar { background-color: #dbeafe; color: #1e40af; border-color: #bfdbfe; }
-.diet-pill-lactose { background-color: #fef3c7; color: #92400e; border-color: #fde68a; }
-.diet-pill-preservative { background-color: #f3f4f6; color: #374151; border-color: #e5e7eb; }
+/* ===== MODAL DETALHES OTIMIZADO (COMPACTO) ===== */
+/* Botão fechar modal visível sempre */
+#close-details-modal-button {
+  background-color: #f3f4f6 !important;
+  color: #374151 !important;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e5e7eb;
+  position: absolute !important;
+  top: 10px !important;
+  right: 10px !important;
+  z-index: 100 !important; /* Acima de tudo */
+}
+#close-details-modal-button:hover {
+  background-color: #e5e7eb !important;
+  color: #ef4444 !important;
+  border-color: #d1d5db;
+}
 
-/* ===== MODAL DETALHES OTIMIZADO ===== */
 #product-details-modal .product-details-image {
-  max-height: 300px !important;
+  max-height: 250px !important; /* Menor altura desktop */
   max-width: 100% !important;
   object-fit: contain;
 }
 
-/* === MODAL MOBILE OTIMIZADO (THUMBNAIL LAYOUT) === */
+#detail-tags-container {
+  display: flex;
+  flex-wrap: wrap !important; /* Força quebra de linha */
+  gap: 6px;
+  white-space: normal; /* Permite quebra */
+}
+
+/* === MODAL MOBILE OTIMIZADO (NOVO LAYOUT) === */
 @media (max-width: 640px) {
-  /* Remove flex column para usar block/float */
+  /* Layout Flexível mas compacto */
   #product-details-modal .product-details-layout {
-    display: block !important;
+    display: flex !important;
+    flex-direction: column !important;
     padding: 0 !important;
   }
-
-  /* Coluna da Imagem vira Miniatura Flutuante */
+  
+  /* Container da Imagem Mobile - Reduzido e ao lado do título */
   #product-details-modal .product-details-image-col {
-    width: 90px !important;
-    height: 90px !important;
-    min-height: auto !important;
-    float: left; /* Flutua à esquerda */
-    margin-right: 12px;
-    margin-bottom: 4px;
-    padding: 4px !important;
-    background: #fff !important;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  /* Imagem pequena */
-  #product-details-modal .product-details-image {
-    max-height: 80px !important;
-    max-width: 80px !important;
-    width: auto !important;
+    width: 100% !important;
     height: auto !important;
+    min-height: auto !important;
+    padding: 1rem 1rem 0.5rem 1rem !important;
+    background: white !important;
+    display: flex;
+    justify-content: center;
+    border-bottom: 1px solid #f3f4f6;
   }
 
-  /* Conteúdo flui ao redor ou abaixo */
+  /* Imagem pequena no mobile */
+  #product-details-modal .product-details-image {
+    max-height: 140px !important; 
+    width: auto !important;
+  }
+
+  /* Conteúdo */
   #product-details-modal .product-details-info-col {
-    padding: 1rem 1rem 0 1rem !important; /* Menos padding no topo */
-    display: block !important;
+    padding: 1rem !important;
+    width: 100% !important;
   }
 
-  /* Ajuste do Título para ficar ao lado da imagem */
   #detail-name {
-    font-size: 1.1rem !important;
-    line-height: 1.3;
-    margin-top: 0 !important;
+    font-size: 1.25rem !important;
+    line-height: 1.2;
   }
-
-  /* Categoria e SKU menores */
-  #detail-category { font-size: 0.65rem !important; }
-  .product-details-info-col p.text-gray-500 { font-size: 0.7rem !important; }
-
-  /* Limpar o float após o cabeçalho se necessário, ou deixar fluir */
-  #detail-price-container {
-    clear: both; /* Preço vai para baixo da imagem/titulo */
-    padding-top: 10px;
+  
+  /* Ajuste para caber as tags sem scroll horizontal */
+  #detail-tags-container {
+    justify-content: flex-start;
   }
 }
 
