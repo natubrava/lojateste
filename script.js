@@ -264,7 +264,7 @@ function getProductStatus(product) {
   }
 }
 
-// ===== HELPER PARA RENDERIZAR TAGS =====
+// ===== HELPER PARA RENDERIZAR TAGS (VERSÃO ANTIGA - CARDS) =====
 function renderTags(tagsString) {
   if (!tagsString) return '';
 
@@ -287,6 +287,42 @@ function renderTags(tagsString) {
     }
 
     return `<span class="product-tag ${colorClass}">${tag}</span>`;
+  }).join('');
+}
+
+// ===== NOVA FUNÇÃO: RENDERIZAR TAGS COM ÍCONES NO MODAL =====
+function renderModalTagsWithIcons(tagsString) {
+  if (!tagsString) return '';
+  const tags = tagsString.split(',').map(t => t.trim()).filter(t => t.length > 0);
+
+  return tags.map(tag => {
+    const lowerTag = normalizeText(tag);
+    let icon = 'pricetag-outline';
+    let cssClass = 'diet-pill-default';
+
+    if (lowerTag.includes('sem gluten') || lowerTag.includes('gluten free')) {
+      icon = 'ban-outline';
+      cssClass = 'diet-pill-gluten';
+    } else if (lowerTag.includes('vegano') || lowerTag.includes('vegana') || lowerTag.includes('vegan')) {
+      icon = 'leaf-outline';
+      cssClass = 'diet-pill-vegan';
+    } else if (lowerTag.includes('sem acucar') || lowerTag.includes('zero acucar')) {
+      icon = 'cube-outline';
+      cssClass = 'diet-pill-sugar';
+    } else if (lowerTag.includes('sem lactose') || lowerTag.includes('sem leite') || lowerTag.includes('lactose free')) {
+      icon = 'water-outline';
+      cssClass = 'diet-pill-lactose';
+    } else if (lowerTag.includes('sem conservante')) {
+      icon = 'shield-checkmark-outline';
+      cssClass = 'diet-pill-preservative';
+    }
+
+    return `
+      <span class="modal-tag-pill ${cssClass}">
+        <ion-icon name="${icon}"></ion-icon>
+        ${tag}
+      </span>
+    `;
   }).join('');
 }
 
@@ -1155,21 +1191,22 @@ function openProductDetails(productId) {
     
     priceHTML = `
       <div class="flex flex-col">
-        <span class="text-sm text-gray-500 line-through">De R$ ${formatPrice(normalPrice)}${isGranel ? '/100g' : ''}</span>
+        <span class="text-xs md:text-sm text-gray-500 line-through">De R$ ${formatPrice(normalPrice)}${isGranel ? '/100g' : ''}</span>
         <div class="flex items-center gap-2">
-          <span class="text-2xl md:text-3xl font-bold text-green-700">R$ ${formatPrice(clubPriceDisplay)}${isGranel ? '/100g' : ''}</span>
+          <span class="text-xl md:text-3xl font-bold text-green-700">R$ ${formatPrice(clubPriceDisplay)}${isGranel ? '/100g' : ''}</span>
           <span class="bg-green-600 text-white text-xs px-2 py-1 rounded font-bold uppercase">Club</span>
         </div>
       </div>
     `;
   } else {
     priceHTML = `
-      <span class="text-2xl md:text-3xl font-bold text-green-700">R$ ${formatPrice(isGranel ? product.price * 100 : product.price)}${isGranel ? '/100g' : ''}</span>
+      <span class="text-xl md:text-3xl font-bold text-green-700">R$ ${formatPrice(isGranel ? product.price * 100 : product.price)}${isGranel ? '/100g' : ''}</span>
     `;
   }
   elements.detailPriceContainer.innerHTML = priceHTML;
 
-  elements.detailTagsContainer.innerHTML = renderTags(product.tags);
+  // AQUI: Usar a nova função que renderiza com ÍCONES
+  elements.detailTagsContainer.innerHTML = renderModalTagsWithIcons(product.tags);
 
   if (product.ingredients && product.ingredients.trim() !== '') {
     elements.detailIngredients.textContent = product.ingredients;
