@@ -379,82 +379,134 @@ html { scroll-behavior: smooth; }
 
 .diet-pill ion-icon { font-size: 11px; }
 
-/* ===== MODAL DETALHES OTIMIZADO (COMPACTO) ===== */
-/* Botão fechar modal visível sempre */
-#close-details-modal-button {
-  background-color: #f3f4f6 !important;
-  color: #374151 !important;
+/* ===== NOVOS ESTILOS PARA BOTÕES DE QUANTIDADE (FIXOS) ===== */
+.qty-btn {
   width: 32px;
   height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  border-radius: 50%;
+  background-color: #f3f4f6;
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #e5e7eb;
-  position: absolute !important;
-  top: 10px !important;
-  right: 10px !important;
-  z-index: 100 !important; /* Acima de tudo */
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #374151;
 }
-#close-details-modal-button:hover {
-  background-color: #e5e7eb !important;
-  color: #ef4444 !important;
-  border-color: #d1d5db;
+
+.qty-btn:hover:not(:disabled) {
+  background-color: #e5e7eb;
+  color: #000;
+}
+
+.qty-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #f9fafb;
+}
+
+/* ===== CORREÇÃO DO MODAL DE DETALHES ===== */
+#product-details-modal {
+  max-width: 800px !important; /* Limita a largura para não explodir no desktop */
+  width: 90%;
+  max-height: 90vh; /* Garante que caiba na tela */
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+#product-details-modal .product-details-layout {
+  display: flex;
+  flex-direction: row; /* Desktop: Lado a Lado */
+  min-height: 0; /* Importante para o scroll funcionar */
+}
+
+/* Coluna da Imagem */
+#product-details-modal .product-details-image-col {
+  width: 45%;
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  border-right: 1px solid #f3f4f6;
+  min-height: 350px;
 }
 
 #product-details-modal .product-details-image {
-  max-height: 250px !important; /* Menor altura desktop */
-  max-width: 100% !important;
+  max-height: 300px !important;
+  width: auto !important;
+  max-width: 100%;
   object-fit: contain;
+}
+
+/* Coluna das Informações */
+#product-details-modal .product-details-info-col {
+  width: 55%;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  max-height: 80vh; /* Scroll interno se o conteúdo for longo */
+}
+
+/* Botão fechar modal */
+#close-details-modal-button {
+  background-color: #f3f4f6 !important;
+  color: #374151 !important;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: none;
+  position: absolute !important;
+  top: 15px !important;
+  right: 15px !important;
+  z-index: 100 !important;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+#close-details-modal-button:hover {
+  background-color: #e5e7eb !important;
+  color: #ef4444 !important;
 }
 
 #detail-tags-container {
   display: flex;
-  flex-wrap: wrap !important; /* Força quebra de linha */
-  gap: 6px;
-  white-space: normal; /* Permite quebra */
+  flex-wrap: wrap !important;
+  gap: 8px;
+  margin-bottom: 1rem;
 }
 
-/* === MODAL MOBILE OTIMIZADO (NOVO LAYOUT) === */
-@media (max-width: 640px) {
-  /* Layout Flexível mas compacto */
+/* === MODAL MOBILE OTIMIZADO === */
+@media (max-width: 768px) {
   #product-details-modal .product-details-layout {
-    display: flex !important;
     flex-direction: column !important;
-    padding: 0 !important;
+    overflow-y: auto;
+    max-height: 85vh;
   }
   
-  /* Container da Imagem Mobile - Reduzido e ao lado do título */
   #product-details-modal .product-details-image-col {
     width: 100% !important;
-    height: auto !important;
     min-height: auto !important;
-    padding: 1rem 1rem 0.5rem 1rem !important;
-    background: white !important;
-    display: flex;
-    justify-content: center;
+    height: auto;
+    border-right: none;
     border-bottom: 1px solid #f3f4f6;
-  }
-
-  /* Imagem pequena no mobile */
-  #product-details-modal .product-details-image {
-    max-height: 140px !important; 
-    width: auto !important;
-  }
-
-  /* Conteúdo */
-  #product-details-modal .product-details-info-col {
-    padding: 1rem !important;
-    width: 100% !important;
-  }
-
-  #detail-name {
-    font-size: 1.25rem !important;
-    line-height: 1.2;
+    padding: 1rem;
   }
   
-  /* Ajuste para caber as tags sem scroll horizontal */
-  #detail-tags-container {
-    justify-content: flex-start;
+  #product-details-modal .product-details-image {
+    max-height: 200px !important;
+  }
+  
+  #product-details-modal .product-details-info-col {
+    width: 100% !important;
+    padding: 1.5rem;
+    overflow-y: visible; /* Scroll vai pro modal inteiro no mobile */
   }
 }
 
