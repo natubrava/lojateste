@@ -227,7 +227,36 @@ function showSuccess() {
 function parseCSV(csvText) {
   if (!csvText || typeof csvText !== 'string') throw new Error('CSV inválido ou vazio');
   
-  const lines = csvText.trim().split('\n');
+  // CORREÇÃO CRÍTICA: Lógica para juntar linhas quebradas dentro de aspas
+  // O Google Sheets exporta células com quebra de linha entre aspas duplas.
+  // O split simples por \n quebrava essas células no meio.
+  
+  const rawLines = csvText.trim().split(/\r\n|\n|\r/);
+  const lines = [];
+  let currentLineBuffer = '';
+  
+  for (let i = 0; i < rawLines.length; i++) {
+    const line = rawLines[i];
+    
+    if (currentLineBuffer) {
+      currentLineBuffer += '\n' + line;
+    } else {
+      currentLineBuffer = line;
+    }
+    
+    // Conta quantas aspas duplas tem na linha acumulada
+    const quoteCount = (currentLineBuffer.match(/"/g) || []).length;
+    
+    // Se o número de aspas for par, significa que todas as aspas abertas foram fechadas.
+    // Podemos considerar a linha completa.
+    if (quoteCount % 2 === 0) {
+      lines.push(currentLineBuffer);
+      currentLineBuffer = '';
+    }
+    // Se for ímpar, significa que tem uma aspa aberta (texto com quebra de linha).
+    // Continua acumulando na próxima iteração.
+  }
+
   if (lines.length < 2) throw new Error('CSV deve ter cabeçalho e dados');
   
   const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
@@ -238,10 +267,16 @@ function parseCSV(csvText) {
   }
   
   return lines.slice(1).map(line => {
+    // Regex complexa para separar por vírgula APENAS se não estiver entre aspas
     const values = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
     const obj = {};
     headers.forEach((header, index) => {
-      obj[header] = (values[index] || '').trim().replace(/^"|"$/g, '');
+      // Remove aspas extras que o CSV coloca em campos de texto
+      let value = (values[index] || '').trim();
+      if (value.startsWith('"') && value.endsWith('"')) {
+        value = value.substring(1, value.length - 1).replace(/""/g, '"');
+      }
+      obj[header] = value;
     });
     return obj;
   }).filter(item => item.SKU && item.NOME_SITE);
