@@ -766,7 +766,6 @@ function renderProducts() {
     const hasClubPrice = product.clubPrice !== null && product.clubPrice > 0;
     const status = product.status;
     
-    // Verificação para botão "Ver Detalhes" (Ingredientes ou Tags)
     const hasDetails = (product.ingredients && product.ingredients.length > 2) || (product.tags && product.tags.length > 0);
     
     let cardClass = 'product-card bg-white rounded-lg overflow-hidden';
@@ -794,7 +793,7 @@ function renderProducts() {
       statusBadgeHTML = '<div class="status-badge low-stock-badge">Últimas Unid.</div>';
     }
     
-    // Preços (Correção do Layout Club NatuBrava)
+    // Preços
     if (hasClubPrice && status !== 'out_of_stock') {
       const normalPrice = isGranel ? product.price * 100 : product.price;
       const clubPriceDisplay = isGranel ? product.clubPrice * 100 : product.clubPrice;
@@ -825,11 +824,20 @@ function renderProducts() {
       const minQty = isGranel ? CONFIG.MIN_GRANEL_QUANTITY : 1;
       const maxQty = isGranel ? product.stock * 1000 : product.stock;
       
+      // *** CORREÇÃO DO LAYOUT DOS BOTÕES + E - ***
       quantityControlsHTML = `
-        <div class="flex items-center space-x-1">
-          <button class="product-quantity-change p-1 rounded-full bg-gray-100 hover:bg-gray-200" data-change="-1" ${initialQty <= minQty ? 'disabled' : ''}><ion-icon name="remove-outline" class="pointer-events-none"></ion-icon></button>
-          <span class="product-quantity font-medium text-base ${isGranel ? 'w-14' : 'w-6'} text-center">${isGranel ? `${initialQty}g` : initialQty}</span>
-          <button class="product-quantity-change p-1 rounded-full bg-gray-100 hover:bg-gray-200" data-change="1" ${initialQty >= maxQty ? 'disabled' : ''}><ion-icon name="add-outline" class="pointer-events-none"></ion-icon></button>
+        <div class="qty-container flex items-center justify-center gap-2">
+          <button class="qty-btn product-quantity-change" data-change="-1" ${initialQty <= minQty ? 'disabled' : ''}>
+            <ion-icon name="remove-outline" class="pointer-events-none"></ion-icon>
+          </button>
+          
+          <span class="product-quantity font-medium text-base text-center ${isGranel ? 'min-w-[50px]' : 'min-w-[30px]'}">
+            ${isGranel ? `${initialQty}g` : initialQty}
+          </span>
+          
+          <button class="qty-btn product-quantity-change" data-change="1" ${initialQty >= maxQty ? 'disabled' : ''}>
+            <ion-icon name="add-outline" class="pointer-events-none"></ion-icon>
+          </button>
         </div>`;
       
       buttonHTML = `
@@ -847,7 +855,7 @@ function renderProducts() {
       displayName = displayName.replace(regex, '<mark class="bg-yellow-200">$1</mark>');
     }
     
-    // Botão "Ver Detalhes" Fixo (Novo Design Pill)
+    // Botão "Ver Detalhes"
     const detailsButtonHTML = hasDetails ? `
         <div class="view-details-pill info-btn-trigger">
           <ion-icon name="eye-outline"></ion-icon> Ver Detalhes
